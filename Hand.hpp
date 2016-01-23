@@ -15,49 +15,39 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef BRIDGE_CONTRACT_HPP
-#define BRIDGE_CONTRACT_HPP
+#ifndef BRIDGE_HAND_HPP
+#define BRIDGE_HAND_HPP
 
+#include "Holding.hpp"
 #include "enum.hpp"
 
 namespace Bridge {
 
-class Contract
+class Hand
 {
   private:
-    unsigned char _level: 3;
-    unsigned char _denomination: 3;
-    unsigned char _doubled: 2;
+    Holding _data[4];
 
   public:
-    constexpr Contract(int, Denomination, Double = Double::_);
-
-    constexpr int level() const;
-    constexpr Denomination denomination() const;
-    constexpr Double doubled() const;
+    constexpr Hand(Holding = {}, Holding = {}, Holding = {}, Holding = {});
+    constexpr Holding operator[](Denomination) const;
+    inline Holding& operator[](Denomination);
 };
 
-constexpr Contract::Contract(int level, Denomination denomination, Double doubled):
-    _level(level),
-    _denomination(int(denomination)),
-    _doubled(int(doubled))
+constexpr Hand::Hand(Holding s, Holding h, Holding d, Holding c):
+    _data { s, h, d, c }
 {}
 
-constexpr int Contract::level() const
+constexpr Holding Hand::operator[](Denomination suit) const
 {
-    return _level;
+    return _data[int(suit)];
 }
 
-constexpr Denomination Contract::denomination() const
+Holding& Hand::operator[](Denomination suit)
 {
-    return Denomination(_denomination);
-}
-
-constexpr Double Contract::doubled() const
-{
-    return Double(_doubled);
+    return _data[int(suit)];
 }
 
 } // namespace Bridge
 
-#endif // BRIDGE_CONTRACT_HPP
+#endif // BRIDGE_HAND_HPP
