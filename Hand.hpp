@@ -34,8 +34,8 @@ class Hand
     inline Holding& operator[](Denomination);
 };
 
-constexpr Hand::Hand(Holding s, Holding h, Holding d, Holding c):
-    _data { s, h, d, c }
+constexpr Hand::Hand(Holding spades, Holding hearts, Holding diamonds, Holding clubs):
+    _data { spades, hearts, diamonds, clubs }
 {}
 
 constexpr Holding Hand::operator[](Denomination suit) const
