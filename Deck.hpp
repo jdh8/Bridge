@@ -33,6 +33,7 @@ struct Deck
 {
     class Card
     {
+      private:
         unsigned char _suit: 2;
         unsigned char _rank: 4;
 
@@ -53,7 +54,7 @@ struct Deck
 };
 
 constexpr Deck::Card::Card(Denomination suit, int rank):
-    _suit(char(suit)),
+    _suit(int(suit)),
     _rank(rank)
 {}
 

@@ -27,10 +27,9 @@ namespace Bridge {
 class Contract
 {
   private:
-    typedef unsigned char Data;
-    Data _level: 3;
-    Data _denomination: 3;
-    Data _doubled: 2;
+    unsigned char _level: 3;
+    unsigned char _denomination: 3;
+    unsigned char _doubled: 2;
 
   public:
     constexpr Contract(int, Denomination, Double = Double::_);
@@ -44,8 +43,8 @@ class Contract
 
 constexpr Contract::Contract(int level, Denomination denomination, Double doubled):
     _level(level),
-    _denomination(Data(denomination)),
-    _doubled(Data(doubled))
+    _denomination(int(denomination)),
+    _doubled(int(doubled))
 {}
 
 template<typename T>
