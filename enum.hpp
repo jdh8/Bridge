@@ -20,7 +20,7 @@
 
 namespace Bridge {
 
-enum class Denomination: unsigned char { Spades, Hearts, Diamonds, Clubs, Notrump };
+enum class Denomination: unsigned char { Clubs, Diamonds, Hearts, Spades, Notrump };
 
 enum class Direction: unsigned char { North, East, South, West };
 

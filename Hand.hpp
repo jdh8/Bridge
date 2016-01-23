@@ -35,7 +35,7 @@ class Hand
 };
 
 constexpr Hand::Hand(Holding spades, Holding hearts, Holding diamonds, Holding clubs):
-    _data { spades, hearts, diamonds, clubs }
+    _data { clubs, diamonds, hearts, spades };
 {}
 
 constexpr Holding Hand::operator[](Denomination suit) const
