@@ -19,35 +19,12 @@
 #define BRIDGE_CONST_HPP
 
 namespace Bridge {
-/*!
- * \brief The 5 denominations, \e aka strains.
- *
- * The values are compatible with dds-bridge/dds, \e the double-dummy solver.
- *
- * \warning Notrump is closer to Clubs instead of Spades.
- */
-enum class Denomination: unsigned char {
-    Spades,   //!< \brief The spade suit
-    Hearts,   //!< \brief The heart suit
-    Diamonds, //!< \brief The diamond suit
-    Clubs,    //!< \brief The club suit
 
-    /*!
-     * \brief No trump
-     * \warning Notrump is closer to Clubs instead of Spades.
-     */
-    Notrump
-};
+enum class Denomination: unsigned char { Spades, Hearts, Diamonds, Clubs, Notrump };
 
-//! \brief Enumeration of the directions.
 enum class Direction: unsigned char { North, East, South, West };
 
-//! \brief Enumeration of doubles.
-enum class Double: unsigned char {
-    _, //!< \brief No double
-    X, //!< \brief Double
-    XX //!< \brief Redouble
-};
+enum class Double: unsigned char { _, X, XX };
 
 } // namespace Bridge
 
