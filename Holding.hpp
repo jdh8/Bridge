@@ -48,7 +48,7 @@ struct Holding
 
     class reference
     {
-        friend class Holding;
+        friend struct Holding;
 
         Holding& _parent;
         std::size_t _position;

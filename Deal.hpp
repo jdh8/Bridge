@@ -20,6 +20,8 @@
 
 #include "Hand.hpp"
 
+struct ddTableDeal;
+
 namespace Bridge {
 
 class Deal
@@ -33,6 +35,7 @@ class Deal
     inline Hand& operator[](Direction);
 
     void randomize();
+    constexpr operator ddTableDeal() const;
 };
 
 constexpr Deal::Deal(Hand north, Hand east, Hand south, Hand west):

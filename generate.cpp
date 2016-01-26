@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Deal.hpp"
+#include <dll.h>
 #include <algorithm>
 #include <random>
 
@@ -40,6 +41,38 @@ void Deal::randomize()
         for (int j = 0; j < 13; ++j)
             _data[i][Denomination(cards[j] & 3)].set(cards[j] >> 2);
     }
+}
+
+constexpr Deal::operator ddTableDeal() const
+{
+    typedef unsigned int Cast;
+
+    return {{
+        {
+            Cast(_data[0][Denomination::Spades].data),
+            Cast(_data[0][Denomination::Hearts].data),
+            Cast(_data[0][Denomination::Diamonds].data),
+            Cast(_data[0][Denomination::Clubs].data)
+        },
+        {
+            Cast(_data[1][Denomination::Spades].data),
+            Cast(_data[1][Denomination::Hearts].data),
+            Cast(_data[1][Denomination::Diamonds].data),
+            Cast(_data[1][Denomination::Clubs].data)
+        },
+        {
+            Cast(_data[2][Denomination::Spades].data),
+            Cast(_data[2][Denomination::Hearts].data),
+            Cast(_data[2][Denomination::Diamonds].data),
+            Cast(_data[2][Denomination::Clubs].data)
+        },
+        {
+            Cast(_data[3][Denomination::Spades].data),
+            Cast(_data[3][Denomination::Hearts].data),
+            Cast(_data[3][Denomination::Diamonds].data),
+            Cast(_data[3][Denomination::Clubs].data)
+        }
+    }};
 }
 
 } // namespace Bridge
