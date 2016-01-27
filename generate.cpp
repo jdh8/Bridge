@@ -19,6 +19,7 @@
 #include <dll.h>
 #include <algorithm>
 #include <random>
+#include <iostream>
 
 namespace Bridge {
 
@@ -73,6 +74,39 @@ constexpr Deal::operator ddTableDeal() const
             Cast(_data[3][Denomination::Clubs].data)
         }
     }};
+}
+
+template<typename T>
+std::basic_ostream<T>& operator<<(std::basic_ostream<T>& stream, Holding holding)
+{
+    constexpr T table[] = { 0, 0, '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A' };
+
+    for (int rank = 14; rank > 1; --rank)
+        if (holding.test(rank))
+            stream << table[rank];
+
+    return stream;
+}
+
+template<typename T>
+std::basic_ostream<T>& operator<<(std::basic_ostream<T>& stream, const Hand& hand)
+{
+    return stream << hand[Denomination::Spades] << '.'
+                  << hand[Denomination::Hearts] << '.'
+                  << hand[Denomination::Diamonds] << '.'
+                  << hand[Denomination::Clubs];
+}
+
+template<typename T>
+std::basic_ostream<T>& operator<<(std::basic_ostream<T>& stream, const Deal& deal)
+{
+    constexpr T header[] = { 'N', ':' };
+
+    return stream << header
+                  << deal[Direction::North] << ' '
+                  << deal[Direction::East] << ' '
+                  << deal[Direction::South] << ' '
+                  << deal[Direction::West];
 }
 
 } // namespace Bridge
