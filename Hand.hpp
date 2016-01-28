@@ -26,17 +26,101 @@ namespace Bridge {
 class Hand
 {
   private:
-    Holding _data[4];
+    union
+    {
+        std::uint64_t _raw;
+        Holding _data[4];
+    };
+
+    static constexpr std::uint64_t _first(std::uint64_t v);
+    static constexpr std::uint64_t _second(std::uint64_t v);
+    static constexpr std::uint64_t _last(std::uint64_t v);
 
   public:
+    explicit constexpr Hand(std::uint64_t);
     constexpr Hand(Holding = {}, Holding = {}, Holding = {}, Holding = {});
+
+    constexpr bool all() const;
+    constexpr bool any() const;
+    constexpr bool none() const;
+    constexpr bool verify() const;
+
+    constexpr std::size_t count() const;
+
+    constexpr Hand operator&(Hand) const;
+    constexpr Hand operator^(Hand) const;
+    constexpr Hand operator|(Hand) const;
+
     constexpr Holding operator[](Denomination) const;
     inline Holding& operator[](Denomination);
 };
 
+constexpr std::uint64_t Hand::_first(std::uint64_t v)
+{
+    return v - ((v >> 1) & UINT64_C(0x5555555555555555));
+}
+
+constexpr std::uint64_t Hand::_second(std::uint64_t v)
+{
+    return (v & UINT64_C(0x3333333333333333)) + ((v >> 2) & UINT64_C(0x3333333333333333));
+}
+
+constexpr std::uint64_t Hand::_last(std::uint64_t v)
+{
+    return UINT64_C(0x0101010101010101) * ((v + (v >> 4)) & UINT64_C(0x0F0F0F0F0F0F0F0F));
+}
+
+constexpr Hand::Hand(std::uint64_t raw):
+    _raw(raw)
+{}
+
 constexpr Hand::Hand(Holding spades, Holding hearts, Holding diamonds, Holding clubs):
     _data { clubs, diamonds, hearts, spades }
 {}
+
+constexpr bool Hand::all() const
+{
+    return (_raw & UINT64_C(0x7FFC7FFC7FFC7FFC)) == UINT64_C(0x7FFC7FFC7FFC7FFC);
+}
+
+constexpr bool Hand::any() const
+{
+    return _raw;
+}
+
+constexpr bool Hand::none() const
+{
+    return !_raw;
+}
+
+constexpr bool Hand::verify() const
+{
+    return count() < 14 && (_raw & UINT64_C(0x7FFC7FFC7FFC7FFC)) == _raw;
+}
+
+constexpr std::size_t Hand::count() const
+{
+#ifdef __POPCNT__
+    return __builtin_popcountll(_raw);
+#else
+    return _last(_second(_first(_raw))) >> 56;
+#endif
+}
+
+constexpr Hand Hand::operator&(Hand other) const
+{
+    return Hand(_raw & other._raw);
+}
+
+constexpr Hand Hand::operator^(Hand other) const
+{
+    return Hand(_raw ^ other._raw);
+}
+
+constexpr Hand Hand::operator|(Hand other) const
+{
+    return Hand(_raw | other._raw);
+}
 
 constexpr Holding Hand::operator[](Denomination suit) const
 {

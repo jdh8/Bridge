@@ -31,16 +31,30 @@ class Deal
 
   public:
     constexpr Deal(Hand = {}, Hand = {}, Hand = {}, Hand = {});
+    constexpr bool verify() const;
     constexpr Hand operator[](Direction) const;
     inline Hand& operator[](Direction);
 
-    void randomize();
+    Deal& randomize();
     constexpr operator ddTableDeal() const;
 };
 
 constexpr Deal::Deal(Hand north, Hand east, Hand south, Hand west):
     _data { north, east, south, west }
 {}
+
+constexpr bool Deal::verify() const
+{
+    return
+        _data[0].verify() && _data[1].verify() &&
+        _data[2].verify() && _data[3].verify() &&
+        _data[0].count() == _data[1].count() &&
+        _data[1].count() == _data[2].count() &&
+        _data[2].count() == _data[3].count() &&
+        !((_data[0] & _data[1]).any() || (_data[0] & _data[2]).any() ||
+          (_data[0] & _data[3]).any() || (_data[1] & _data[2]).any() ||
+          (_data[1] & _data[3]).any() || (_data[2] & _data[3]).any());
+}
 
 constexpr Hand Deal::operator[](Direction player) const
 {

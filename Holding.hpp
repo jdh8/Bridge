@@ -19,6 +19,7 @@
 #define BRIDGE_HOLDING_HPP
 
 #include <cstddef>
+#include <cstdint>
 
 namespace Bridge {
 
@@ -26,16 +27,19 @@ struct Holding
 {
     enum { Jack = 11, Queen, King, Ace };
 
-    short data;
+    std::uint16_t data;
 
     constexpr bool all() const;
     constexpr bool any() const;
     constexpr bool none() const;
+    constexpr bool verify() const;
     constexpr bool test(std::size_t) const;
     constexpr bool operator[](std::size_t) const;
 
     constexpr std::size_t count() const;
     constexpr std::size_t size() const;
+
+    inline Holding& normalize();
 
     inline Holding& flip();
     inline Holding& flip(std::size_t);
@@ -70,7 +74,7 @@ struct Holding
 
 constexpr bool Holding::all() const
 {
-    return data == ~0;
+    return (data & 0x7FFC) == 0x7FFC;
 }
 
 constexpr bool Holding::any() const
@@ -81,6 +85,11 @@ constexpr bool Holding::any() const
 constexpr bool Holding::none() const
 {
     return !data;
+}
+
+constexpr bool Holding::verify() const
+{
+    return (data & 0x7FFC) == data;
 }
 
 constexpr bool Holding::test(std::size_t position) const
@@ -98,13 +107,19 @@ constexpr std::size_t Holding::count() const
 #ifdef __POPCNT__
     return __builtin_popcount(data);
 #else
-    return (data * 0x200040008001ULL & 0x111111111111111ULL) % 0xF;
+    return (data * UINT64_C(0x200040008001) & UINT64_C(0x111111111111111)) % 0xF;
 #endif
 }
 
 constexpr std::size_t Holding::size() const
 {
     return 15;
+}
+
+Holding& Holding::normalize()
+{
+    data &= 0x7FFC;
+    return *this;
 }
 
 Holding& Holding::flip()

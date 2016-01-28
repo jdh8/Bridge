@@ -23,7 +23,7 @@
 
 namespace Bridge {
 
-void Deal::randomize()
+Deal& Deal::randomize()
 {
     static std::mt19937 generator((std::random_device())());
 
@@ -42,36 +42,36 @@ void Deal::randomize()
         for (int j = 0; j < 13; ++j)
             _data[i][Denomination(cards[j] & 3)].set(cards[j] >> 2);
     }
+
+    return *this;
 }
 
 constexpr Deal::operator ddTableDeal() const
 {
-    typedef unsigned int Cast;
-
     return {{
         {
-            Cast(_data[0][Denomination::Spades].data),
-            Cast(_data[0][Denomination::Hearts].data),
-            Cast(_data[0][Denomination::Diamonds].data),
-            Cast(_data[0][Denomination::Clubs].data)
+            _data[0][Denomination::Spades].data,
+            _data[0][Denomination::Hearts].data,
+            _data[0][Denomination::Diamonds].data,
+            _data[0][Denomination::Clubs].data
         },
         {
-            Cast(_data[1][Denomination::Spades].data),
-            Cast(_data[1][Denomination::Hearts].data),
-            Cast(_data[1][Denomination::Diamonds].data),
-            Cast(_data[1][Denomination::Clubs].data)
+            _data[1][Denomination::Spades].data,
+            _data[1][Denomination::Hearts].data,
+            _data[1][Denomination::Diamonds].data,
+            _data[1][Denomination::Clubs].data
         },
         {
-            Cast(_data[2][Denomination::Spades].data),
-            Cast(_data[2][Denomination::Hearts].data),
-            Cast(_data[2][Denomination::Diamonds].data),
-            Cast(_data[2][Denomination::Clubs].data)
+            _data[2][Denomination::Spades].data,
+            _data[2][Denomination::Hearts].data,
+            _data[2][Denomination::Diamonds].data,
+            _data[2][Denomination::Clubs].data
         },
         {
-            Cast(_data[3][Denomination::Spades].data),
-            Cast(_data[3][Denomination::Hearts].data),
-            Cast(_data[3][Denomination::Diamonds].data),
-            Cast(_data[3][Denomination::Clubs].data)
+            _data[3][Denomination::Spades].data,
+            _data[3][Denomination::Hearts].data,
+            _data[3][Denomination::Diamonds].data,
+            _data[3][Denomination::Clubs].data
         }
     }};
 }
@@ -110,3 +110,8 @@ std::basic_ostream<T>& operator<<(std::basic_ostream<T>& stream, const Deal& dea
 }
 
 } // namespace Bridge
+
+int main()
+{
+    return !Bridge::Deal().randomize().verify();
+}
