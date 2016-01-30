@@ -136,7 +136,7 @@ Holding& Holding::flip(std::size_t position)
 
 Holding& Holding::set()
 {
-    data = ~0;
+    data = -1;
     return *this;
 }
 

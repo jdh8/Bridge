@@ -23,7 +23,7 @@
 
 namespace Bridge {
 
-Deal& Deal::randomize()
+Deal& Deal::operator=(Random)
 {
     static std::mt19937 generator((std::random_device())());
 
@@ -38,6 +38,7 @@ Deal& Deal::randomize()
 
     for (int i = 0; i < 4; ++i) {
         const unsigned char* cards = deck + 13 * i;
+        _data[i].reset();
 
         for (int j = 0; j < 13; ++j)
             _data[i][Denomination(cards[j] & 3)].set(cards[j] >> 2);
@@ -100,7 +101,7 @@ std::basic_ostream<T>& operator<<(std::basic_ostream<T>& stream, const Hand& han
 template<typename T>
 std::basic_ostream<T>& operator<<(std::basic_ostream<T>& stream, const Deal& deal)
 {
-    constexpr T header[] = { 'N', ':' };
+    constexpr T header[] = { 'N', ':', 0 };
 
     return stream << header
                   << deal[Direction::North] << ' '
@@ -113,5 +114,14 @@ std::basic_ostream<T>& operator<<(std::basic_ostream<T>& stream, const Deal& dea
 
 int main()
 {
-    return !Bridge::Deal().randomize().verify();
+    Bridge::Deal deal = Bridge::Deal::Random();
+
+    std::cout << deal << std::endl;
+
+    if (!deal.verify()) {
+        std::cerr << "The deal is invalid.\n";
+        return 1;
+    }
+
+    return 0;
 }

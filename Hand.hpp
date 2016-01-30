@@ -53,6 +53,11 @@ class Hand
 
     constexpr Holding operator[](Denomination) const;
     inline Holding& operator[](Denomination);
+
+    inline Hand& normalize();
+    inline Hand& flip();
+    inline Hand& set();
+    inline Hand& reset();
 };
 
 constexpr std::uint64_t Hand::_first(std::uint64_t v)
@@ -130,6 +135,30 @@ constexpr Holding Hand::operator[](Denomination suit) const
 Holding& Hand::operator[](Denomination suit)
 {
     return _data[int(suit)];
+}
+
+Hand& Hand::normalize()
+{
+    _raw &= UINT64_C(0x7FFC7FFC7FFC7FFC);
+    return *this;
+}
+
+Hand& Hand::flip()
+{
+    _raw = ~_raw;
+    return *this;
+}
+
+Hand& Hand::set()
+{
+    _raw = -1;
+    return *this;
+}
+
+Hand& Hand::reset()
+{
+    _raw = 0;
+    return *this;
 }
 
 } // namespace Bridge

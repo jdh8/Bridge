@@ -30,18 +30,27 @@ class Deal
     Hand _data[4];
 
   public:
+    class Random {};
+
     constexpr Deal(Hand = {}, Hand = {}, Hand = {}, Hand = {});
+    inline Deal(Random);
+
     constexpr bool verify() const;
     constexpr Hand operator[](Direction) const;
     inline Hand& operator[](Direction);
+    Deal& operator=(Random);
 
-    Deal& randomize();
     constexpr operator ddTableDeal() const;
 };
 
 constexpr Deal::Deal(Hand north, Hand east, Hand south, Hand west):
     _data { north, east, south, west }
 {}
+
+Deal::Deal(Random random)
+{
+    *this = random;
+}
 
 constexpr bool Deal::verify() const
 {
