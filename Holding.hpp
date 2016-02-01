@@ -185,8 +185,7 @@ Holding::reference& Holding::reference::operator=(bool value)
 
 Holding::reference& Holding::reference::operator=(const reference& ref)
 {
-    _parent.set(_position, bool(ref));
-    return *this;
+    return *this = bool(ref);
 }
 
 Holding::reference& Holding::reference::flip()

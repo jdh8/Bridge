@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Deal.hpp"
+#include "Result.hpp"
 #include <dll.h>
 #include <algorithm>
 #include <random>
@@ -114,7 +115,11 @@ std::basic_ostream<T>& operator<<(std::basic_ostream<T>& stream, const Deal& dea
 
 int main()
 {
+    using namespace Bridge;
+
     Bridge::Deal deal = Bridge::Deal::Random();
+
+    deal[Direction::North][Denomination::Spades][10] = deal[Direction::North][Denomination::Spades][11];
 
     std::cout << deal << std::endl;
 
