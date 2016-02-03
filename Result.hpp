@@ -33,6 +33,10 @@ class Row
 
   public:
     constexpr Row(int, int, int, int);
+
+    template<typename T>
+    constexpr Row(const T*);
+
     constexpr int operator[](Direction) const;
 
     class reference
@@ -55,6 +59,11 @@ class Row
 
 constexpr Row::Row(int north, int east, int south, int west):
     _data(north | east << 4 | south << 8 | west << 12)
+{}
+
+template<typename T>
+constexpr Row::Row(const T* array):
+    Row(array[0], array[1], array[2], array[3])
 {}
 
 constexpr int Row::operator[](Direction direction) const
