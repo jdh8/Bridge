@@ -95,8 +95,30 @@ Row::reference& Row::reference::operator=(const reference& ref)
 
 class Table
 {
+  private:
     Row _data[5];
+
+  public:
+    constexpr Table(Row, Row, Row, Row, Row);
+    constexpr Table(const ddTableResults&);
+
+    constexpr Row operator[](Denomination) const;
+    inline Row& operator[](Denomination);
 };
+
+constexpr Table::Table(Row clubs, Row diamonds, Row hearts, Row spades, Row notrump)
+  : _data { clubs, diamonds, hearts, spades, notrump }
+{}
+
+constexpr Row Table::operator[](Denomination denomination) const
+{
+    return _data[int(denomination)];
+}
+
+Row& Table::operator[](Denomination denomination)
+{
+    return _data[int(denomination)];
+}
 
 } // namespace Result
 } // namespace Bridge
