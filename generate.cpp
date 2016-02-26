@@ -119,8 +119,6 @@ int main()
 
     Bridge::Deal deal = Bridge::Deal::Random();
 
-    deal[Direction::North][Denomination::Spades][10] = deal[Direction::North][Denomination::Spades][11];
-
     std::cout << deal << std::endl;
 
     if (!deal.verify()) {
