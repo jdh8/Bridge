@@ -119,10 +119,7 @@ std::basic_ostream<T>& operator<<(std::basic_ostream<T>& stream, const Hand& han
 template<typename T>
 std::basic_ostream<T>& operator<<(std::basic_ostream<T>& stream, const Deal& deal)
 {
-    constexpr T header[] = { 'N', ':', 0 };
-
-    return stream << header
-                  << deal[Direction::North] << ' '
+    return stream << deal[Direction::North] << ' '
                   << deal[Direction::East] << ' '
                   << deal[Direction::South] << ' '
                   << deal[Direction::West];
