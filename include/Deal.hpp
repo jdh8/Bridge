@@ -24,6 +24,8 @@ struct ddTableDeal;
 
 namespace Bridge {
 
+namespace Result { class Table; }
+
 class Deal
 {
   private:
@@ -35,12 +37,14 @@ class Deal
     constexpr Deal(Hand = {}, Hand = {}, Hand = {}, Hand = {});
     inline Deal(Random);
 
-    constexpr bool verify() const;
     constexpr Hand operator[](Direction) const;
     inline Hand& operator[](Direction);
     Deal& operator=(Random);
 
     constexpr operator ::ddTableDeal() const;
+
+    constexpr bool verify() const;
+    Result::Table solve() const;
 };
 
 constexpr Deal::Deal(Hand north, Hand east, Hand south, Hand west):
@@ -50,6 +54,16 @@ constexpr Deal::Deal(Hand north, Hand east, Hand south, Hand west):
 Deal::Deal(Random random)
 {
     *this = random;
+}
+
+constexpr Hand Deal::operator[](Direction player) const
+{
+    return _data[int(player)];
+}
+
+Hand& Deal::operator[](Direction player)
+{
+    return _data[int(player)];
 }
 
 constexpr bool Deal::verify() const
@@ -63,16 +77,6 @@ constexpr bool Deal::verify() const
         !((_data[0] & _data[1]).any() || (_data[0] & _data[2]).any() ||
           (_data[0] & _data[3]).any() || (_data[1] & _data[2]).any() ||
           (_data[1] & _data[3]).any() || (_data[2] & _data[3]).any());
-}
-
-constexpr Hand Deal::operator[](Direction player) const
-{
-    return _data[int(player)];
-}
-
-Hand& Deal::operator[](Direction player)
-{
-    return _data[int(player)];
 }
 
 } // namespace Bridge

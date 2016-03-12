@@ -24,6 +24,15 @@
 
 namespace Bridge {
 
+constexpr Result::Table::Table(const ::ddTableResults& table):
+    Table(
+        table.resTable[3],
+        table.resTable[2],
+        table.resTable[1],
+        table.resTable[0],
+        table.resTable[4])
+{}
+
 Deal& Deal::operator=(Random)
 {
     static std::mt19937 generator((std::random_device())());
@@ -78,6 +87,14 @@ constexpr Deal::operator ::ddTableDeal() const
     }};
 }
 
+Result::Table Deal::solve() const
+{
+    ::ddTableResults result;
+    ::CalcDDtable(*this, &result);
+
+    return result;
+}
+
 template<typename T>
 std::basic_ostream<T>& operator<<(std::basic_ostream<T>& stream, Holding holding)
 {
@@ -111,6 +128,27 @@ std::basic_ostream<T>& operator<<(std::basic_ostream<T>& stream, const Deal& dea
                   << deal[Direction::West];
 }
 
+template<typename T>
+std::basic_ostream<T>& operator<<(std::basic_ostream<T>& stream, const Result::Row& row)
+{
+    constexpr char hex[] = "0123456789ABCDEF";
+
+    return stream << hex[row[Direction::North]]
+                  << hex[row[Direction::East]]
+                  << hex[row[Direction::South]]
+                  << hex[row[Direction::West]];
+}
+
+template<typename T>
+std::basic_ostream<T>& operator<<(std::basic_ostream<T>& stream, const Result::Table& result)
+{
+    return stream << result[Denomination::Clubs]
+                  << result[Denomination::Diamonds]
+                  << result[Denomination::Hearts]
+                  << result[Denomination::Spades]
+                  << result[Denomination::Notrump];
+}
+
 } // namespace Bridge
 
 int main()
@@ -119,7 +157,7 @@ int main()
 
     Bridge::Deal deal = Bridge::Deal::Random();
 
-    std::cout << deal << std::endl;
+    std::cout << deal << ' ' << deal.solve() << std::endl;
 
     if (!deal.verify()) {
         std::cerr << "The deal is invalid.\n";
