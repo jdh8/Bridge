@@ -40,7 +40,7 @@ class Deal
     inline Hand& operator[](Direction);
     Deal& operator=(Random);
 
-    constexpr operator ddTableDeal() const;
+    constexpr operator ::ddTableDeal() const;
 };
 
 constexpr Deal::Deal(Hand north, Hand east, Hand south, Hand west):

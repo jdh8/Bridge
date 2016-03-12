@@ -48,7 +48,7 @@ Deal& Deal::operator=(Random)
     return *this;
 }
 
-constexpr Deal::operator ddTableDeal() const
+constexpr Deal::operator ::ddTableDeal() const
 {
     return {{
         {

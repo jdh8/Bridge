@@ -100,14 +100,14 @@ class Table
 
   public:
     constexpr Table(Row, Row, Row, Row, Row);
-    constexpr Table(const ddTableResults&);
+    constexpr Table(const ::ddTableResults&);
 
     constexpr Row operator[](Denomination) const;
     inline Row& operator[](Denomination);
 };
 
-constexpr Table::Table(Row clubs, Row diamonds, Row hearts, Row spades, Row notrump)
-  : _data { clubs, diamonds, hearts, spades, notrump }
+constexpr Table::Table(Row clubs, Row diamonds, Row hearts, Row spades, Row notrump):
+    _data { clubs, diamonds, hearts, spades, notrump }
 {}
 
 constexpr Row Table::operator[](Denomination denomination) const
