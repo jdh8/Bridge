@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.4)
 
 set(CMAKE_CXX_STANDARD 11)
 
+find_package(OpenMP)
+
 if(MSVC)
     set(CMAKE_CXX_FLAGS "${OpenMP_CXX_FLAGS} /Oi /Oy /GL /EHs /Wall")
 else()
