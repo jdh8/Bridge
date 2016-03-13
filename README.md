@@ -2,9 +2,8 @@ Bridge
 ======
 Bridge library and utility in clean C++11.
 
-## Prerequite ##
-Build [*the* double-dummy solver][dds] in dds/src.  I have no good idea to
-automate its build now.
+## Dependency ##
+[*The* double-dummy solver][dds] as a submodule.
 
 ## Build ##
 [CMake][cmake] is used to automate build.  The building instruction is similar
