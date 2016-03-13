@@ -10,7 +10,7 @@ endif()
 
 include_directories("include" "dds/include")
 
-add_library(dds STATIC
+add_library(dds SHARED
     dds/src/dds.cpp
     dds/src/ABsearch.cpp
     dds/src/ABstats.cpp
