@@ -21,17 +21,10 @@
 #include <algorithm>
 #include <random>
 #include <iostream>
+#include <sstream>
+#include <cassert>
 
 namespace Bridge {
-
-constexpr Result::Table::Table(const ::ddTableResults& table):
-    Table(
-        table.resTable[3],
-        table.resTable[2],
-        table.resTable[1],
-        table.resTable[0],
-        table.resTable[4])
-{}
 
 Deal& Deal::operator=(Random)
 {
@@ -125,8 +118,19 @@ std::basic_ostream<T>& operator<<(std::basic_ostream<T>& stream, const Deal& dea
                   << deal[Direction::West];
 }
 
+namespace Result {
+
+constexpr Table::Table(const ::ddTableResults& table):
+    Table(
+        table.resTable[3],
+        table.resTable[2],
+        table.resTable[1],
+        table.resTable[0],
+        table.resTable[4])
+{}
+
 template<typename T>
-std::basic_ostream<T>& operator<<(std::basic_ostream<T>& stream, const Result::Row& row)
+std::basic_ostream<T>& operator<<(std::basic_ostream<T>& stream, const Row& row)
 {
     constexpr char hex[] = "0123456789ABCDEF";
 
@@ -137,7 +141,7 @@ std::basic_ostream<T>& operator<<(std::basic_ostream<T>& stream, const Result::R
 }
 
 template<typename T>
-std::basic_ostream<T>& operator<<(std::basic_ostream<T>& stream, const Result::Table& result)
+std::basic_ostream<T>& operator<<(std::basic_ostream<T>& stream, const Table& result)
 {
     return stream << result[Denomination::Clubs]
                   << result[Denomination::Diamonds]
@@ -146,19 +150,37 @@ std::basic_ostream<T>& operator<<(std::basic_ostream<T>& stream, const Result::T
                   << result[Denomination::Notrump];
 }
 
+} // namespace Result
+
 } // namespace Bridge
 
-int main()
+static void procedure(std::size_t number)
 {
-    using namespace Bridge;
+    Bridge::Deal deal;
 
-    Bridge::Deal deal = Bridge::Deal::Random();
+    for (; number; --number) {
+        deal = Bridge::Deal::Random();
+        assert(deal.verify() && "The generated deal does not verify.");
+        std::cout << deal << ' ' << deal.solve() << '\n';
+    }
+}
 
-    std::cout << deal << ' ' << deal.solve() << std::endl;
+static void usage(std::ostream& stream, const char* program)
+{
+    stream << "Usage: " << program << " NUMBER\n\n"
+        "This program generates bridge deals and their double-dummy solutions.\n";
+}
 
-    if (!deal.verify()) {
-        std::cerr << "The deal is invalid.\n";
-        return 1;
+int main(int argc, char** argv)
+{
+    std::size_t number;
+
+    if (argc == 1) {
+        usage(std::cout, argv[0]);
+    }
+    else {
+        std::istringstream(argv[1]) >> number;
+        number ? procedure(number) : usage(std::cerr, argv[0]);
     }
 
     return 0;
