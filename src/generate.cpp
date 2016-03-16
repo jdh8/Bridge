@@ -15,8 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Deal.hpp"
-#include "Result.hpp"
+#include <Bridge/Deal.hpp>
+#include <Bridge/Result.hpp>
 #include <dll.h>
 #include <algorithm>
 #include <random>
