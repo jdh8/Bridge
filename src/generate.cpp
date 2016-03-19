@@ -175,12 +175,14 @@ int main(int argc, char** argv)
 {
     std::size_t number;
 
+    std::ios_base::sync_with_stdio(false);
+
     if (argc == 1) {
         usage(std::cout, argv[0]);
     }
     else {
         std::istringstream(argv[1]) >> number;
-        number ? procedure(number) : usage(std::cerr, argv[0]);
+        number ? procedure(number) : usage(std::clog, argv[0]);
     }
 
     return 0;
