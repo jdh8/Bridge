@@ -15,8 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef BRIDGE_CONST_HPP
-#define BRIDGE_CONST_HPP
+#ifndef BRIDGE_ENUM_HPP
+#define BRIDGE_ENUM_HPP
 
 namespace Bridge {
 
@@ -28,4 +28,4 @@ enum class Double: unsigned char { _, X, XX };
 
 } // namespace Bridge
 
-#endif // BRIDGE_CONST_HPP
+#endif // BRIDGE_ENUM_HPP
