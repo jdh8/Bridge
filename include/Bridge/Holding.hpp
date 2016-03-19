@@ -18,12 +18,13 @@
 #ifndef BRIDGE_HOLDING_HPP
 #define BRIDGE_HOLDING_HPP
 
+#include "Binary.hpp"
 #include <cstddef>
 #include <cstdint>
 
 namespace Bridge {
 
-struct Holding
+struct Holding : Binary<Holding>
 {
     enum { Jack = 11, Queen, King, Ace };
 

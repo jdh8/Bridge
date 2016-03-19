@@ -18,6 +18,7 @@
 #ifndef BRIDGE_RESULT_HPP
 #define BRIDGE_RESULT_HPP
 
+#include "Binary.hpp"
 #include "enum.hpp"
 #include <cstdint>
 
@@ -26,7 +27,7 @@ struct ddTableResults;
 namespace Bridge {
 namespace Result {
 
-class Row
+class Row : public Binary<Row>
 {
   private:
     std::uint16_t _data;
@@ -93,7 +94,7 @@ Row::reference& Row::reference::operator=(const reference& ref)
     return *this = int(ref);
 }
 
-class Table
+class Table : public Binary<Table>
 {
   private:
     Row _data[5];
