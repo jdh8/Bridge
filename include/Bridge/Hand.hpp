@@ -58,6 +58,12 @@ class Hand : public Binary<Hand>
     inline Hand& flip();
     inline Hand& set();
     inline Hand& reset();
+
+    template<typename Result, typename F>
+    constexpr Result evaluate(const F&) const;
+
+    template<typename F>
+    constexpr auto evaluate(const F& f) const -> decltype(f(Holding()));
 };
 
 constexpr std::uint64_t Hand::_first(std::uint64_t v)
@@ -159,6 +165,18 @@ Hand& Hand::reset()
 {
     _raw = 0;
     return *this;
+}
+
+template<typename Result, typename F>
+constexpr Result Hand::evaluate(const F& f) const
+{
+    return f(_data[0]) + f(_data[1]) + f(_data[2]) + f(_data[3]);
+}
+
+template<typename F>
+constexpr auto Hand::evaluate(const F& f) const -> decltype(f(Holding()))
+{
+    return evaluate<decltype(f(Holding()))>(f);
 }
 
 } // namespace Bridge
