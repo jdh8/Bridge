@@ -18,7 +18,6 @@
 #ifndef BRIDGE_RESULT_HPP
 #define BRIDGE_RESULT_HPP
 
-#include "Binary.hpp"
 #include "enum.hpp"
 #include <cstdint>
 

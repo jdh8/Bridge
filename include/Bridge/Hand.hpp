@@ -23,7 +23,7 @@
 
 namespace Bridge {
 
-class Hand
+class Hand : public Mask<Hand>
 {
   private:
     union
@@ -42,11 +42,13 @@ class Hand
 
     constexpr bool all() const;
     constexpr bool any() const;
-    constexpr bool none() const;
     constexpr bool verify() const;
 
     constexpr std::size_t count() const;
 
+    constexpr bool operator==(Hand) const;
+
+    constexpr Hand operator~() const;
     constexpr Hand operator&(Hand) const;
     constexpr Hand operator^(Hand) const;
     constexpr Hand operator|(Hand) const;
@@ -55,9 +57,7 @@ class Hand
     inline Holding& operator[](Denomination);
 
     inline Hand& normalize();
-    inline Hand& flip();
     inline Hand& set();
-    inline Hand& reset();
 
     template<typename Result, typename F>
     constexpr Result evaluate(const F&) const;
@@ -99,11 +99,6 @@ constexpr bool Hand::any() const
     return _raw;
 }
 
-constexpr bool Hand::none() const
-{
-    return !_raw;
-}
-
 constexpr bool Hand::verify() const
 {
     return count() < 14 && (_raw & UINT64_C(0x7FFC7FFC7FFC7FFC)) == _raw;
@@ -116,6 +111,16 @@ constexpr std::size_t Hand::count() const
 #else
     return _last(_second(_first(_raw))) >> 56;
 #endif
+}
+
+constexpr bool Hand::operator==(Hand other) const
+{
+    return _raw == other._raw;
+}
+
+constexpr Hand Hand::operator~() const
+{
+    return Hand(~_raw);
 }
 
 constexpr Hand Hand::operator&(Hand other) const
@@ -149,21 +154,9 @@ Hand& Hand::normalize()
     return *this;
 }
 
-Hand& Hand::flip()
-{
-    _raw = ~_raw;
-    return *this;
-}
-
 Hand& Hand::set()
 {
     _raw = -1;
-    return *this;
-}
-
-Hand& Hand::reset()
-{
-    _raw = 0;
     return *this;
 }
 

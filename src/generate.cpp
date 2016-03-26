@@ -54,28 +54,28 @@ constexpr Deal::operator ::ddTableDeal() const
 {
     return {{
         {
-            _data[0][Denomination::Spades].data,
-            _data[0][Denomination::Hearts].data,
-            _data[0][Denomination::Diamonds].data,
-            _data[0][Denomination::Clubs].data
+            _data[0][Denomination::Spades].cast(),
+            _data[0][Denomination::Hearts].cast(),
+            _data[0][Denomination::Diamonds].cast(),
+            _data[0][Denomination::Clubs].cast()
         },
         {
-            _data[1][Denomination::Spades].data,
-            _data[1][Denomination::Hearts].data,
-            _data[1][Denomination::Diamonds].data,
-            _data[1][Denomination::Clubs].data
+            _data[1][Denomination::Spades].cast(),
+            _data[1][Denomination::Hearts].cast(),
+            _data[1][Denomination::Diamonds].cast(),
+            _data[1][Denomination::Clubs].cast()
         },
         {
-            _data[2][Denomination::Spades].data,
-            _data[2][Denomination::Hearts].data,
-            _data[2][Denomination::Diamonds].data,
-            _data[2][Denomination::Clubs].data
+            _data[2][Denomination::Spades].cast(),
+            _data[2][Denomination::Hearts].cast(),
+            _data[2][Denomination::Diamonds].cast(),
+            _data[2][Denomination::Clubs].cast()
         },
         {
-            _data[3][Denomination::Spades].data,
-            _data[3][Denomination::Hearts].data,
-            _data[3][Denomination::Diamonds].data,
-            _data[3][Denomination::Clubs].data
+            _data[3][Denomination::Spades].cast(),
+            _data[3][Denomination::Hearts].cast(),
+            _data[3][Denomination::Diamonds].cast(),
+            _data[3][Denomination::Clubs].cast()
         }
     }};
 }
