@@ -27,7 +27,7 @@ struct ddTableResults;
 namespace Bridge {
 namespace Result {
 
-class Row : public Binary<Row>
+class Row
 {
   private:
     std::uint16_t _data;
@@ -94,7 +94,7 @@ Row::reference& Row::reference::operator=(const reference& ref)
     return *this = int(ref);
 }
 
-class Table : public Binary<Table>
+class Table
 {
   private:
     Row _data[5];

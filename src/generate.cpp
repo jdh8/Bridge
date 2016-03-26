@@ -154,6 +154,12 @@ std::basic_ostream<T>& operator<<(std::basic_ostream<T>& stream, const Table& re
 
 } // namespace Bridge
 
+template<typename T, typename Data>
+static std::basic_ostream<T>& write(std::basic_ostream<T>& stream, const Data& data)
+{
+    return stream.write(reinterpret_cast<const T*>(data), sizeof(Data));
+}
+
 template<typename T>
 static void procedure(std::size_t number, std::basic_ostream<T>& stream)
 {
@@ -163,8 +169,8 @@ static void procedure(std::size_t number, std::basic_ostream<T>& stream)
         deal = Bridge::Deal::Random();
         assert(deal.verify() && "The generated deal does not verify.");
 
-        deal.write(stream);
-        deal.solve().write(stream);
+        write(stream, deal);
+        write(stream, deal.solve());
     }
 }
 

@@ -23,7 +23,7 @@
 
 namespace Bridge {
 
-class Hand : public Binary<Hand>
+class Hand
 {
   private:
     union

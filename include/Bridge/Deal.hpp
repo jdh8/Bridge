@@ -26,7 +26,7 @@ namespace Bridge {
 
 namespace Result { class Table; }
 
-class Deal : public Binary<Deal>
+class Deal
 {
   private:
     Hand _data[4];
