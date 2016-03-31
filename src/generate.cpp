@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <random>
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <cassert>
 
@@ -157,13 +158,18 @@ std::basic_ostream<T>& operator<<(std::basic_ostream<T>& stream, const Table& re
 template<typename T, typename Data>
 static std::basic_ostream<T>& write(std::basic_ostream<T>& stream, const Data& data)
 {
-    return stream.write(reinterpret_cast<const T*>(data), sizeof(Data));
+    return stream.write(reinterpret_cast<const T*>(&data), sizeof(Data));
 }
 
-template<typename T>
-static void procedure(std::size_t number, std::basic_ostream<T>& stream)
+static int procedure(std::size_t number, const char* filename)
 {
     Bridge::Deal deal;
+    std::ofstream stream(filename, std::ios_base::binary);
+
+    if (stream.rdstate()) {
+        std::clog << "Error opening " << filename << '\n';
+        return 2;
+    }
 
     for (; number; --number) {
         deal = Bridge::Deal::Random();
@@ -172,9 +178,11 @@ static void procedure(std::size_t number, std::basic_ostream<T>& stream)
         write(stream, deal);
         write(stream, deal.solve());
     }
+
+    return 0;
 }
 
-static void procedure(std::size_t number)
+static int procedure(std::size_t number)
 {
     Bridge::Deal deal;
 
@@ -183,12 +191,21 @@ static void procedure(std::size_t number)
         assert(deal.verify() && "The generated deal does not verify.");
         std::cout << deal << ' ' << deal.solve() << '\n';
     }
+
+    return 0;
 }
 
-static void usage(std::ostream& stream, const char* program)
+static int usage(std::ostream& stream, const char* program)
 {
-    stream << "Usage: " << program << " NUMBER\n\n"
-        "This program generates bridge deals and their double-dummy solutions.\n";
+    stream << "Usage: " << program << " NUMBER [FILE]\n\n"
+        "This program generates bridge deals and their double-dummy solutions.\n\n"
+        "By default, text-based deals and solutions are written to the standard output.\n"
+        "However, if FILE is given, it is written in binary format.\n\n"
+        "This program is single-threaded to avoid race condition in I/O.  To make use\n"
+        "of multiple computing units, please run several instances with different\n"
+        "output streams.\n";
+
+    return 1;
 }
 
 int main(int argc, char** argv)
@@ -197,13 +214,21 @@ int main(int argc, char** argv)
 
     std::ios_base::sync_with_stdio(false);
 
-    if (argc == 1) {
-        usage(std::cout, argv[0]);
-    }
-    else {
-        std::istringstream(argv[1]) >> number;
-        number ? procedure(number) : usage(std::clog, argv[0]);
-    }
+    switch (argc) {
+      case 0:
+        return usage(std::cout, "generate");
+      case 1:
+        return usage(std::cout, argv[0]);
 
-    return 0;
+      case 2:
+        std::istringstream(argv[1]) >> number;
+        return number ? procedure(number) : usage(std::clog, argv[0]);
+
+      case 3:
+        std::istringstream(argv[1]) >> number;
+        return number ? procedure(number, argv[2]) : usage(std::clog, argv[0]);
+
+      default:
+        return usage(std::cerr, argv[0]);
+    }
 }
