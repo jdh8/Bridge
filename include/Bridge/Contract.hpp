@@ -30,30 +30,34 @@ class Contract
     unsigned char _doubled: 2;
 
   public:
-    constexpr Contract(int, Denomination, Double = Double::_);
+    Contract(int, Denomination, Double = Double::_);
 
-    constexpr int level() const;
-    constexpr Denomination denomination() const;
-    constexpr Double doubled() const;
+    int level() const;
+    Denomination denomination() const;
+    Double doubled() const;
 };
 
-constexpr Contract::Contract(int level, Denomination denomination, Double doubled):
+inline
+Contract::Contract(int level, Denomination denomination, Double doubled):
     _level(level),
     _denomination(int(denomination)),
     _doubled(int(doubled))
 {}
 
-constexpr int Contract::level() const
+inline
+int Contract::level() const
 {
     return _level;
 }
 
-constexpr Denomination Contract::denomination() const
+inline
+Denomination Contract::denomination() const
 {
     return Denomination(_denomination);
 }
 
-constexpr Double Contract::doubled() const
+inline
+Double Contract::doubled() const
 {
     return Double(_doubled);
 }

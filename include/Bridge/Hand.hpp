@@ -32,128 +32,130 @@ class Hand : public Mask<Hand>
         Holding _data[4];
     };
 
-    static constexpr std::uint64_t _first(std::uint64_t v);
-    static constexpr std::uint64_t _second(std::uint64_t v);
-    static constexpr std::uint64_t _last(std::uint64_t v);
-
   public:
-    explicit constexpr Hand(std::uint64_t);
-    constexpr Hand(Holding = {}, Holding = {}, Holding = {}, Holding = {});
+    explicit Hand(std::uint64_t);
+    Hand(Holding = {}, Holding = {}, Holding = {}, Holding = {});
 
-    constexpr bool all() const;
-    constexpr bool any() const;
-    constexpr bool verify() const;
+    bool all() const;
+    bool any() const;
+    bool verify() const;
 
-    constexpr std::size_t count() const;
+    std::size_t count() const;
 
-    constexpr bool operator==(Hand) const;
+    bool operator==(Hand) const;
 
-    constexpr Hand operator~() const;
-    constexpr Hand operator&(Hand) const;
-    constexpr Hand operator^(Hand) const;
-    constexpr Hand operator|(Hand) const;
+    Hand operator~() const;
+    Hand operator&(Hand) const;
+    Hand operator^(Hand) const;
+    Hand operator|(Hand) const;
 
-    constexpr Holding operator[](Denomination) const;
-    inline Holding& operator[](Denomination);
+    Holding operator[](Denomination) const;
+    Holding& operator[](Denomination);
 
-    inline Hand& normalize();
-    inline Hand& set();
+    Hand& normalize();
+    Hand& set();
 
     template<typename Result, typename F>
-    constexpr Result evaluate(const F&) const;
+    Result evaluate(const F&) const;
 
     template<typename F>
-    constexpr auto evaluate(const F& f) const -> decltype(f(Holding()));
+    auto evaluate(const F& f) const -> decltype(f(Holding()));
 };
 
-constexpr std::uint64_t Hand::_first(std::uint64_t v)
-{
-    return v - ((v >> 1) & UINT64_C(0x5555555555555555));
-}
-
-constexpr std::uint64_t Hand::_second(std::uint64_t v)
-{
-    return (v & UINT64_C(0x3333333333333333)) + ((v >> 2) & UINT64_C(0x3333333333333333));
-}
-
-constexpr std::uint64_t Hand::_last(std::uint64_t v)
-{
-    return UINT64_C(0x0101010101010101) * ((v + (v >> 4)) & UINT64_C(0x0F0F0F0F0F0F0F0F));
-}
-
-constexpr Hand::Hand(std::uint64_t raw):
+inline
+Hand::Hand(std::uint64_t raw):
     _raw(raw)
 {}
 
-constexpr Hand::Hand(Holding spades, Holding hearts, Holding diamonds, Holding clubs):
+inline
+Hand::Hand(Holding spades, Holding hearts, Holding diamonds, Holding clubs):
     _data { clubs, diamonds, hearts, spades }
 {}
 
-constexpr bool Hand::all() const
+inline
+bool Hand::all() const
 {
     return (_raw & UINT64_C(0x7FFC7FFC7FFC7FFC)) == UINT64_C(0x7FFC7FFC7FFC7FFC);
 }
 
-constexpr bool Hand::any() const
+inline
+bool Hand::any() const
 {
     return _raw;
 }
 
-constexpr bool Hand::verify() const
+inline
+bool Hand::verify() const
 {
     return count() < 14 && (_raw & UINT64_C(0x7FFC7FFC7FFC7FFC)) == _raw;
 }
 
-constexpr std::size_t Hand::count() const
+inline
+std::size_t Hand::count() const
 {
 #ifdef __POPCNT__
     return __builtin_popcountll(_raw);
 #else
-    return _last(_second(_first(_raw))) >> 56;
+    std::uint64_t v = _raw;
+
+    v = v - ((v >> 1) & UINT64_C(0x5555555555555555));
+    v = (v & UINT64_C(0x3333333333333333)) + ((v >> 2) & UINT64_C(0x3333333333333333));
+    v = UINT64_C(0x0101010101010101) * ((v + (v >> 4)) & UINT64_C(0x0F0F0F0F0F0F0F0F));
+
+    return v >> 56;
 #endif
 }
 
-constexpr bool Hand::operator==(Hand other) const
+inline
+bool Hand::operator==(Hand other) const
 {
     return _raw == other._raw;
 }
 
-constexpr Hand Hand::operator~() const
+inline
+Hand Hand::operator~() const
 {
     return Hand(~_raw);
 }
 
-constexpr Hand Hand::operator&(Hand other) const
+inline
+Hand Hand::operator&(Hand other) const
 {
     return Hand(_raw & other._raw);
 }
 
-constexpr Hand Hand::operator^(Hand other) const
+inline
+Hand Hand::operator^(Hand other) const
 {
     return Hand(_raw ^ other._raw);
 }
 
-constexpr Hand Hand::operator|(Hand other) const
+inline
+Hand Hand::operator|(Hand other) const
 {
     return Hand(_raw | other._raw);
 }
 
-constexpr Holding Hand::operator[](Denomination suit) const
+inline
+Holding Hand::operator[](Denomination suit) const
 {
     return _data[int(suit)];
 }
 
+inline
 Holding& Hand::operator[](Denomination suit)
 {
     return _data[int(suit)];
 }
 
+inline
 Hand& Hand::normalize()
 {
     _raw &= UINT64_C(0x7FFC7FFC7FFC7FFC);
     return *this;
 }
 
+inline
 Hand& Hand::set()
 {
     _raw = -1;
@@ -161,13 +163,13 @@ Hand& Hand::set()
 }
 
 template<typename Result, typename F>
-constexpr Result Hand::evaluate(const F& f) const
+Result Hand::evaluate(const F& f) const
 {
     return f(_data[0]) + f(_data[1]) + f(_data[2]) + f(_data[3]);
 }
 
 template<typename F>
-constexpr auto Hand::evaluate(const F& f) const -> decltype(f(Holding()))
+auto Hand::evaluate(const F& f) const -> decltype(f(Holding()))
 {
     return evaluate<decltype(f(Holding()))>(f);
 }

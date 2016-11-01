@@ -23,10 +23,10 @@ namespace Bridge {
 template<typename Derived>
 struct Mask
 {
-    constexpr const Derived& derived() const;
+    const Derived& derived() const;
     Derived& derived();
 
-    constexpr bool none() const;
+    bool none() const;
 
     Derived& flip();
     Derived& reset();
@@ -37,7 +37,7 @@ struct Mask
 };
 
 template<typename Derived>
-constexpr const Derived& Mask<Derived>::derived() const
+const Derived& Mask<Derived>::derived() const
 {
     return static_cast<const Derived&>(*this);
 }
@@ -49,7 +49,7 @@ Derived& Mask<Derived>::derived()
 }
 
 template<typename Derived>
-constexpr bool Mask<Derived>::none() const
+bool Mask<Derived>::none() const
 {
     return derived().any();
 }

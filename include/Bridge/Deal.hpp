@@ -34,39 +34,44 @@ class Deal
   public:
     class Random {};
 
-    constexpr Deal(Hand = {}, Hand = {}, Hand = {}, Hand = {});
-    inline Deal(Random);
+    Deal(Hand = {}, Hand = {}, Hand = {}, Hand = {});
+    Deal(Random);
 
-    constexpr Hand operator[](Direction) const;
-    inline Hand& operator[](Direction);
+    Hand operator[](Direction) const;
+    Hand& operator[](Direction);
     Deal& operator=(Random);
 
-    constexpr operator ::ddTableDeal() const;
+    operator ::ddTableDeal() const;
 
-    constexpr bool verify() const;
+    bool verify() const;
     Result::Table solve() const;
 };
 
-constexpr Deal::Deal(Hand north, Hand east, Hand south, Hand west):
+inline
+Deal::Deal(Hand north, Hand east, Hand south, Hand west):
     _data { north, east, south, west }
 {}
 
+inline
 Deal::Deal(Random random)
 {
     *this = random;
 }
 
-constexpr Hand Deal::operator[](Direction player) const
+inline
+Hand Deal::operator[](Direction player) const
 {
     return _data[int(player)];
 }
 
+inline
 Hand& Deal::operator[](Direction player)
 {
     return _data[int(player)];
 }
 
-constexpr bool Deal::verify() const
+inline
+bool Deal::verify() const
 {
     return
         _data[0].verify() && _data[1].verify() &&

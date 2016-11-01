@@ -51,7 +51,7 @@ Deal& Deal::operator=(Random)
     return *this;
 }
 
-constexpr Deal::operator ::ddTableDeal() const
+Deal::operator ::ddTableDeal() const
 {
     return {{
         {
@@ -92,7 +92,7 @@ Result::Table Deal::solve() const
 template<typename T>
 std::basic_ostream<T>& operator<<(std::basic_ostream<T>& stream, Holding holding)
 {
-    constexpr T table[] = { 0, 0, '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A' };
+    const T table[] = { 0, 0, '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A' };
 
     for (int rank = 14; rank > 1; --rank)
         if (holding.test(rank))
@@ -121,7 +121,7 @@ std::basic_ostream<T>& operator<<(std::basic_ostream<T>& stream, const Deal& dea
 
 namespace Result {
 
-constexpr Table::Table(const ::ddTableResults& table):
+Table::Table(const ::ddTableResults& table):
     Table(
         table.resTable[3],
         table.resTable[2],
@@ -133,7 +133,7 @@ constexpr Table::Table(const ::ddTableResults& table):
 template<typename T>
 std::basic_ostream<T>& operator<<(std::basic_ostream<T>& stream, const Row& row)
 {
-    constexpr char hex[] = "0123456789ABCDEF";
+    const char hex[] = "0123456789ABCDEF";
 
     return stream << hex[row[Direction::North]]
                   << hex[row[Direction::East]]

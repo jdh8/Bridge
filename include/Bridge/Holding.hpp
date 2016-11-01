@@ -37,116 +37,109 @@ class Holding : public Mask<Holding>
 
     enum { Jack = 11, Queen, King, Ace };
 
-    constexpr Holding();
-    explicit constexpr Holding(std::uint16_t);
+    Holding();
+    explicit Holding(std::uint16_t);
 
-    constexpr bool all() const;
-    constexpr bool any() const;
-    constexpr bool verify() const;
-    constexpr bool test(std::size_t) const;
-    constexpr bool operator[](std::size_t) const;
-    constexpr bool operator==(Holding) const;
+    bool all() const;
+    bool any() const;
+    bool verify() const;
+    bool test(std::size_t) const;
+    bool operator[](std::size_t) const;
+    bool operator==(Holding) const;
 
-    constexpr Holding operator~() const;
-    constexpr Holding operator&(Holding) const;
-    constexpr Holding operator^(Holding) const;
-    constexpr Holding operator|(Holding) const;
+    Holding operator~() const;
+    Holding operator&(Holding) const;
+    Holding operator^(Holding) const;
+    Holding operator|(Holding) const;
 
-    constexpr std::size_t count() const;
-    constexpr std::size_t size() const;
+    std::size_t count() const;
+    std::size_t size() const;
 
-    constexpr std::uint16_t cast() const;
+    std::uint16_t cast() const;
 
-    inline Holding& normalize();
+    Holding& normalize();
 
-    inline Holding& flip(std::size_t);
-    inline Holding& reset(std::size_t);
+    Holding& flip(std::size_t);
+    Holding& reset(std::size_t);
 
-    inline Holding& set();
-    inline Holding& set(std::size_t, bool = true);
+    Holding& set();
+    Holding& set(std::size_t, bool = true);
 
-    inline reference operator[](std::size_t position);
+    reference operator[](std::size_t position);
 };
 
-class Holding::reference
-{
-    friend reference Holding::operator[](std::size_t position);
-
-  private:
-    Holding& _parent;
-    std::size_t _position;
-
-    constexpr reference(Holding&, std::size_t);
-
-  public:
-    constexpr operator bool() const;
-    constexpr bool operator~() const;
-
-    inline reference& operator=(bool);
-    inline reference& operator=(const reference&);
-
-    inline reference& flip();
-};
-
-constexpr Holding::Holding():
+inline
+Holding::Holding():
     _data()
 {}
 
-constexpr Holding::Holding(std::uint16_t value):
+inline
+Holding::Holding(std::uint16_t value):
     _data(value)
 {}
 
-constexpr bool Holding::all() const
+inline
+bool Holding::all() const
 {
     return (_data & 0x7FFC) == 0x7FFC;
 }
 
-constexpr bool Holding::any() const
+inline
+bool Holding::any() const
 {
     return _data;
 }
 
-constexpr bool Holding::verify() const
+inline
+bool Holding::verify() const
 {
     return (_data & 0x7FFC) == _data;
 }
 
-constexpr bool Holding::test(std::size_t position) const
+inline
+bool Holding::test(std::size_t position) const
 {
     return _data & (1 << position);
 }
 
-constexpr bool Holding::operator[](std::size_t position) const
+inline
+bool Holding::operator[](std::size_t position) const
 {
     return test(position);
 }
 
-constexpr bool Holding::operator==(Holding other) const
+inline
+bool Holding::operator==(Holding other) const
 {
     return _data == other._data;
 }
 
-constexpr Holding Holding::operator~() const
+inline
+Holding Holding::operator~() const
 {
     return Holding(~_data);
 }
 
-constexpr Holding Holding::operator&(Holding other) const
+inline
+Holding Holding::operator&(Holding other) const
 {
     return Holding(_data & other._data);
 }
 
-constexpr Holding Holding::operator^(Holding other) const
+inline
+Holding Holding::operator^(Holding other) const
 {
     return Holding(_data ^ other._data);
 }
 
-constexpr Holding Holding::operator|(Holding other) const
+inline
+Holding Holding::operator|(Holding other) const
 {
     return Holding(_data | other._data);
 }
 
-constexpr std::size_t Holding::count() const
+inline
+std::size_t Holding::count() const
 {
 #ifdef __POPCNT__
     return __builtin_popcount(_data);
@@ -155,40 +148,47 @@ constexpr std::size_t Holding::count() const
 #endif
 }
 
-constexpr std::size_t Holding::size() const
+inline
+std::size_t Holding::size() const
 {
     return 15;
 }
 
-constexpr std::uint16_t Holding::cast() const
+inline
+std::uint16_t Holding::cast() const
 {
     return _data;
 }
 
+inline
 Holding& Holding::normalize()
 {
     _data &= 0x7FFC;
     return *this;
 }
 
+inline
 Holding& Holding::flip(std::size_t position)
 {
     _data ^= 1 << position;
     return *this;
 }
 
+inline
 Holding& Holding::reset(std::size_t position)
 {
     _data &= ~(1 << position);
     return *this;
 }
 
+inline
 Holding& Holding::set()
 {
     _data = -1;
     return *this;
 }
 
+inline
 Holding& Holding::set(std::size_t position, bool value)
 {
     if (value)
@@ -199,38 +199,65 @@ Holding& Holding::set(std::size_t position, bool value)
     return *this;
 }
 
-constexpr Holding::reference::reference(Holding& parent, std::size_t position):
+class Holding::reference
+{
+    friend reference Holding::operator[](std::size_t position);
+
+  private:
+    Holding& _parent;
+    std::size_t _position;
+
+    reference(Holding&, std::size_t);
+
+  public:
+    operator bool() const;
+    bool operator~() const;
+
+    reference& operator=(bool);
+    reference& operator=(const reference&);
+
+    reference& flip();
+};
+
+inline
+Holding::reference::reference(Holding& parent, std::size_t position):
     _parent(parent),
     _position(position)
 {}
 
-constexpr Holding::reference::operator bool() const
+inline
+Holding::reference::operator bool() const
 {
     return _parent.test(_position);
 }
 
-constexpr bool Holding::reference::operator~() const
+inline
+bool Holding::reference::operator~() const
 {
     return !_parent.test(_position);
 }
 
+inline
 Holding::reference& Holding::reference::operator=(bool value)
 {
     _parent.set(_position, value);
     return *this;
 }
 
+inline
 Holding::reference& Holding::reference::operator=(const reference& ref)
 {
     return *this = bool(ref);
 }
 
+inline
 Holding::reference& Holding::reference::flip()
 {
     _parent.flip(_position);
     return *this;
 }
 
+inline
 Holding::reference Holding::operator[](std::size_t position)
 {
     return { *this, position };

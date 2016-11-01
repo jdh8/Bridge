@@ -32,12 +32,12 @@ class Row
     std::uint16_t _data;
 
   public:
-    constexpr Row(int, int, int, int);
+    Row(int, int, int, int);
 
     template<typename T>
-    constexpr Row(const T*);
+    Row(const T*);
 
-    constexpr int operator[](Direction) const;
+    int operator[](Direction) const;
 
     class reference
     {
@@ -46,41 +46,46 @@ class Row
         Row& _parent;
         Direction _direction;
 
-        constexpr reference(Row&, Direction);
+        reference(Row&, Direction);
 
       public:
-        constexpr operator int() const;
-        inline reference& operator=(int);
-        inline reference& operator=(const reference&);
+        operator int() const;
+        reference& operator=(int);
+        reference& operator=(const reference&);
     };
 
-    inline reference operator[](Direction position);
+    reference operator[](Direction position);
 };
 
-constexpr Row::Row(int north, int east, int south, int west):
+inline
+Row::Row(int north, int east, int south, int west):
     _data(north | east << 4 | south << 8 | west << 12)
 {}
 
 template<typename T>
-constexpr Row::Row(const T* array):
+Row::Row(const T* array):
     Row(array[0], array[1], array[2], array[3])
 {}
 
-constexpr int Row::operator[](Direction direction) const
+inline
+int Row::operator[](Direction direction) const
 {
     return _data >> (int(direction) << 2) & 0xF;
 }
 
-constexpr Row::reference::reference(Row& parent, Direction direction):
+inline
+Row::reference::reference(Row& parent, Direction direction):
     _parent(parent),
     _direction(direction)
 {}
 
-constexpr Row::reference::operator int() const
+inline
+Row::reference::operator int() const
 {
     return static_cast<const Row&>(_parent)[_direction];
 }
 
+inline
 Row::reference& Row::reference::operator=(int value)
 {
     int shift = int(_direction) << 2;
@@ -88,6 +93,7 @@ Row::reference& Row::reference::operator=(int value)
     return *this;
 }
 
+inline
 Row::reference& Row::reference::operator=(const reference& ref)
 {
     return *this = int(ref);
@@ -99,22 +105,25 @@ class Table
     Row _data[5];
 
   public:
-    constexpr Table(Row, Row, Row, Row, Row);
-    constexpr Table(const ::ddTableResults&);
+    Table(Row, Row, Row, Row, Row);
+    Table(const ::ddTableResults&);
 
-    constexpr Row operator[](Denomination) const;
-    inline Row& operator[](Denomination);
+    Row operator[](Denomination) const;
+    Row& operator[](Denomination);
 };
 
-constexpr Table::Table(Row clubs, Row diamonds, Row hearts, Row spades, Row notrump):
+inline
+Table::Table(Row clubs, Row diamonds, Row hearts, Row spades, Row notrump):
     _data { clubs, diamonds, hearts, spades, notrump }
 {}
 
-constexpr Row Table::operator[](Denomination denomination) const
+inline
+Row Table::operator[](Denomination denomination) const
 {
     return _data[int(denomination)];
 }
 
+inline
 Row& Table::operator[](Denomination denomination)
 {
     return _data[int(denomination)];
