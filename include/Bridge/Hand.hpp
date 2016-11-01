@@ -20,21 +20,20 @@
 
 #include "Holding.hpp"
 #include "enum.hpp"
+#include <cstring>
 
 namespace Bridge {
 
 class Hand : public Mask<Hand>
 {
   private:
-    union
-    {
-        std::uint64_t _raw;
-        Holding _data[4];
-    };
+    Holding _data[4];
 
   public:
     explicit Hand(std::uint64_t);
     Hand(Holding = {}, Holding = {}, Holding = {}, Holding = {});
+
+    explicit operator std::uint64_t() const;
 
     bool all() const;
     bool any() const;
@@ -63,9 +62,10 @@ class Hand : public Mask<Hand>
 };
 
 inline
-Hand::Hand(std::uint64_t raw):
-    _raw(raw)
-{}
+Hand::Hand(std::uint64_t raw)
+{
+    std::memcpy(_data, &raw, sizeof(std::uint64_t));
+}
 
 inline
 Hand::Hand(Holding spades, Holding hearts, Holding diamonds, Holding clubs):
@@ -73,31 +73,47 @@ Hand::Hand(Holding spades, Holding hearts, Holding diamonds, Holding clubs):
 {}
 
 inline
+Hand::operator std::uint64_t() const
+{
+    std::uint64_t result;
+
+    std::memcpy(&result, _data, sizeof(std::uint64_t));
+
+    return result;
+}
+
+inline
 bool Hand::all() const
 {
-    return (_raw & UINT64_C(0x7FFC7FFC7FFC7FFC)) == UINT64_C(0x7FFC7FFC7FFC7FFC);
+    std::uint64_t raw(*this);
+
+    return (raw & UINT64_C(0x7FFC7FFC7FFC7FFC)) == UINT64_C(0x7FFC7FFC7FFC7FFC);
 }
 
 inline
 bool Hand::any() const
 {
-    return _raw;
+    std::uint64_t raw(*this);
+
+    return raw;
 }
 
 inline
 bool Hand::verify() const
 {
-    return count() < 14 && (_raw & UINT64_C(0x7FFC7FFC7FFC7FFC)) == _raw;
+    std::uint64_t raw(*this);
+
+    return count() < 14 && (raw & UINT64_C(0x7FFC7FFC7FFC7FFC)) == raw;
 }
 
 inline
 std::size_t Hand::count() const
 {
-#ifdef __POPCNT__
-    return __builtin_popcountll(_raw);
-#else
-    std::uint64_t v = _raw;
+    std::uint64_t v(*this);
 
+#ifdef __POPCNT__
+    return __builtin_popcountll(v);
+#else
     v = v - ((v >> 1) & UINT64_C(0x5555555555555555));
     v = (v & UINT64_C(0x3333333333333333)) + ((v >> 2) & UINT64_C(0x3333333333333333));
     v = UINT64_C(0x0101010101010101) * ((v + (v >> 4)) & UINT64_C(0x0F0F0F0F0F0F0F0F));
@@ -109,31 +125,45 @@ std::size_t Hand::count() const
 inline
 bool Hand::operator==(Hand other) const
 {
-    return _raw == other._raw;
+    std::uint64_t x(*this);
+    std::uint64_t y(other);
+
+    return x == y;
 }
 
 inline
 Hand Hand::operator~() const
 {
-    return Hand(~_raw);
+    std::uint64_t raw(*this);
+
+    return Hand(~raw);
 }
 
 inline
 Hand Hand::operator&(Hand other) const
 {
-    return Hand(_raw & other._raw);
+    std::uint64_t x(*this);
+    std::uint64_t y(other);
+
+    return Hand(x & y);
 }
 
 inline
 Hand Hand::operator^(Hand other) const
 {
-    return Hand(_raw ^ other._raw);
+    std::uint64_t x(*this);
+    std::uint64_t y(other);
+
+    return Hand(x ^ y);
 }
 
 inline
 Hand Hand::operator|(Hand other) const
 {
-    return Hand(_raw | other._raw);
+    std::uint64_t x(*this);
+    std::uint64_t y(other);
+
+    return Hand(x | y);
 }
 
 inline
@@ -151,15 +181,15 @@ Holding& Hand::operator[](Denomination suit)
 inline
 Hand& Hand::normalize()
 {
-    _raw &= UINT64_C(0x7FFC7FFC7FFC7FFC);
-    return *this;
+    std::uint64_t raw(*this);
+
+    return *this = Hand(raw & UINT64_C(0x7FFC7FFC7FFC7FFC));
 }
 
 inline
 Hand& Hand::set()
 {
-    _raw = -1;
-    return *this;
+    return *this = Hand(-1);
 }
 
 template<typename Result, typename F>
