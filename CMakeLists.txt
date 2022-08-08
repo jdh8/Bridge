@@ -2,47 +2,21 @@ cmake_minimum_required(VERSION 3.16)
 
 project(Bridge)
 
-set(CMAKE_CXX_STANDARD 11)
-
-find_package(OpenMP)
+set(CMAKE_CXX_STANDARD 14)
+set(DDS_SRC_DIR "" CACHE PATH "Built source directory of DDS")
 
 if(MSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} /Oi /Oy /GL /EHs /Wall")
+  add_compile_options(/W4)
 else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -flto -march=native -pipe -Wall -Wextra -Wpedantic")
+  add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-include_directories("include" "dds/include")
+find_library(DDS_LIBRARY dds "${DDS_SRC_DIR}/src" REQUIRED)
 
-add_library(dds SHARED
-    dds/src/ABsearch.cpp
-    dds/src/ABstats.cpp
-    dds/src/CalcTables.cpp
-    dds/src/DealerPar.cpp
-    dds/src/File.cpp
-    dds/src/Init.cpp
-    dds/src/LaterTricks.cpp
-    dds/src/Memory.cpp
-    dds/src/Moves.cpp
-    dds/src/Par.cpp
-    dds/src/PBN.cpp
-    dds/src/PlayAnalyser.cpp
-    dds/src/QuickTricks.cpp
-    dds/src/Scheduler.cpp
-    dds/src/SolveBoard.cpp
-    dds/src/SolverIF.cpp
-    dds/src/System.cpp
-    dds/src/ThreadMgr.cpp
-    dds/src/Timer.cpp
-    dds/src/TimerGroup.cpp
-    dds/src/TimerList.cpp
-    dds/src/TimeStat.cpp
-    dds/src/TimeStatList.cpp
-    dds/src/TransTableL.cpp
-    dds/src/TransTableS.cpp
-    dds/src/dds.cpp
-    dds/src/dump.cpp
+include_directories(
+  "include"
+  "${DDS_SRC_DIR}/include"
 )
 
-add_executable(generate src/generate.cpp)
-target_link_libraries(generate dds)
+add_executable(generate src/generate.cpp src/Deal.cpp)
+target_link_libraries(generate "${DDS_LIBRARY}" LLVM)

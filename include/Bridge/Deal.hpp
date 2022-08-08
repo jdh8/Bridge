@@ -1,6 +1,6 @@
 // This file is part of Bridge, a library and utility for bridge.
 //
-// Copyright (C) 2016 Chen-Pang He <https://jdh8.org/>
+// Copyright (C) 2016, 2022 Chen-Pang He <https://jdh8.org/>
 //
 // Bridge is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,71 +18,81 @@
 #ifndef BRIDGE_DEAL_HPP
 #define BRIDGE_DEAL_HPP
 
-#include "Hand.hpp"
+#include <cstdint>
 
-struct ddTableDeal;
+namespace llvm {
+class raw_ostream;
+} // namespace llvm
 
 namespace Bridge {
 
-namespace Result { class Table; }
+enum class Strain { C, D, H, S, N };
+enum class Seat { N, E, S, W };
+
+namespace Rank {
+enum { J = 11, Q, K, A };
+} // namespace Rank
+
+class Card
+{
+  unsigned char _suit : 2;
+  unsigned char _rank : 4;
+
+public:
+  constexpr Card(Strain suit, int rank)
+    : _suit(static_cast<int>(suit)), _rank(rank)
+  {}
+
+  constexpr Strain suit() const { return static_cast<Strain>(_suit); }
+  constexpr int rank() const { return _rank; }
+};
+
+class Holding
+{
+  std::uint16_t _data = 0;
+
+public:
+  std::uint16_t bits() const { return _data; }
+  bool empty() const { return !_data; }
+  bool test(int rank) const { return bits() & 1u << rank; }
+
+  void set(int rank) { _data |= 1u << rank; }
+};
+
+class Hand
+{
+  Holding _data[4] = {};
+
+public:
+  Holding operator[](Strain suit) const { return _data[static_cast<int>(suit)]; }
+  Holding & operator[](Strain suit) { return _data[static_cast<int>(suit)]; }
+
+  bool empty() const
+  {
+    return _data[0].empty()
+        && _data[1].empty()
+        && _data[2].empty()
+        && _data[3].empty();
+  }
+
+  bool test(Card card) const { return (*this)[card.suit()].test(card.rank()); }
+  void set(Card card) { (*this)[card.suit()].set(card.rank()); }
+};
 
 class Deal
 {
-  private:
-    Hand _data[4];
+  Hand _hands[4] = {};
 
-  public:
-    class Random {};
-
-    Deal(Hand = {}, Hand = {}, Hand = {}, Hand = {});
-    Deal(Random);
-
-    Hand operator[](Direction) const;
-    Hand& operator[](Direction);
-    Deal& operator=(Random);
-
-    operator ::ddTableDeal() const;
-
-    bool verify() const;
-    Result::Table solve() const;
+public:
+  Hand operator[](Seat seat) const { return _hands[static_cast<int>(seat)]; }
+  Hand & operator[](Seat seat) { return _hands[static_cast<int>(seat)]; }
 };
 
-inline
-Deal::Deal(Hand north, Hand east, Hand south, Hand west):
-    _data { north, east, south, west }
-{}
+Deal getRandomDeal();
 
-inline
-Deal::Deal(Random random)
-{
-    *this = random;
-}
-
-inline
-Hand Deal::operator[](Direction player) const
-{
-    return _data[int(player)];
-}
-
-inline
-Hand& Deal::operator[](Direction player)
-{
-    return _data[int(player)];
-}
-
-inline
-bool Deal::verify() const
-{
-    return
-        _data[0].verify() && _data[1].verify() &&
-        _data[2].verify() && _data[3].verify() &&
-        _data[0].count() == _data[1].count() &&
-        _data[1].count() == _data[2].count() &&
-        _data[2].count() == _data[3].count() &&
-        !((_data[0] & _data[1]).any() || (_data[0] & _data[2]).any() ||
-          (_data[0] & _data[3]).any() || (_data[1] & _data[2]).any() ||
-          (_data[1] & _data[3]).any() || (_data[2] & _data[3]).any());
-}
+llvm::raw_ostream &operator<<(llvm::raw_ostream &, const Holding &);
+llvm::raw_ostream &operator<<(llvm::raw_ostream &, const Hand &);
+llvm::raw_ostream &operator<<(llvm::raw_ostream &, const Deal &);
 
 } // namespace Bridge
 
