@@ -38,26 +38,29 @@ auto apply(const F &f, const Hand &hand)
 }
 
 template <typename T>
-struct Evaluator : private Eigen::Matrix<T, Eigen::Dynamic, 1, Eigen::ColMajor, 12>
+class Evaluator
 {
-  using Eigen::Matrix<T, Eigen::Dynamic, 1, Eigen::ColMajor, 12>::Matrix;
+  const Eigen::Matrix<T, Eigen::Dynamic, 1, Eigen::ColMajor, 12> _values;
+
+public:
+  explicit Evaluator(std::initializer_list<T> list) : _values{ list } {}
 
   T operator()(Holding holding) const
   {
     T points {};
 
-    for (typename Evaluator::Index i = 0; i < this->size(); ++i)
-      points += (*this)[i] * holding.test(14 - i);
+    for (decltype(_values.size()) i = 0; i < _values.size(); ++i)
+      points += _values.coeff(i) * holding.test(14 - i);
 
     return points;
   }
 };
 
-const Evaluator<int> HCP {{ 4, 3, 2, 1 }};
-const Evaluator<float> BUMRAP {{ 4.5f, 3.0f, 1.5f, 0.75f, 0.25f }};
+const Evaluator<int> HCP { 4, 3, 2, 1 };
+const Evaluator<float> BUMRAP { 4.5f, 3.0f, 1.5f, 0.75f, 0.25f };
 
 // https://bridge.thomasoandrews.com/valuations/cardvaluesfor3nt.html
 // We use 10x values to avoid floating-point errors
-const Evaluator<int> Fifths {{ 40, 28, 18, 10, 4 }};
+const Evaluator<int> Fifths { 40, 28, 18, 10, 4 };
 
 } // namespace Bridge
