@@ -38,9 +38,9 @@ auto apply(const F &f, const Hand &hand)
 }
 
 template <typename T>
-struct Evaluator : private Eigen::Matrix<T, Eigen::Dynamic, 1, Eigen::ColMajor, 14>
+struct Evaluator : private Eigen::Matrix<T, Eigen::Dynamic, 1, Eigen::ColMajor, 12>
 {
-  using Eigen::Matrix<T, Eigen::Dynamic, 1, Eigen::ColMajor, 14>::Matrix;
+  using Eigen::Matrix<T, Eigen::Dynamic, 1, Eigen::ColMajor, 12>::Matrix;
 
   T operator()(Holding holding) const
   {
