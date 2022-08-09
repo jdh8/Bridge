@@ -1,6 +1,6 @@
 // This file is part of Bridge, a library and utility for bridge.
 //
-// Copyright (C) 2016, 2022 Chen-Pang He <https://jdh8.org/>
+// Copyright (C) 2022 Chen-Pang He <https://jdh8.org/>
 //
 // Bridge is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,11 +15,20 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include <Bridge/Deal.hpp>
+#include <Bridge/DDS.hpp>
 #include <dll.h>
-#include <llvm/Support/CommandLine.h>
 
-static ::ddTableDeal toDDS(const Bridge::Deal &deal)
+Bridge::Result::Result(const ::ddTableResults &table)
+  : _strains {
+    { table.resTable[3][0], table.resTable[3][1], table.resTable[3][2], table.resTable[3][3] },
+    { table.resTable[2][0], table.resTable[2][1], table.resTable[2][2], table.resTable[2][3] },
+    { table.resTable[1][0], table.resTable[1][1], table.resTable[1][2], table.resTable[1][3] },
+    { table.resTable[0][0], table.resTable[0][1], table.resTable[0][2], table.resTable[0][3] },
+    { table.resTable[4][0], table.resTable[4][1], table.resTable[4][2], table.resTable[4][3] },
+  }
+{}
+
+static ::ddTableDeal convertToDDS(const Bridge::Deal &deal)
 {
   using namespace Bridge;
 
@@ -51,61 +60,32 @@ static ::ddTableDeal toDDS(const Bridge::Deal &deal)
   }};
 }
 
-static ::ddTableDeals getRandomDealPack(int count)
+llvm::SmallVector<Bridge::Result, 0> Bridge::solve(llvm::ArrayRef<Bridge::Deal> deals, Bridge::StrainMask mask)
 {
-  ::ddTableDeals pack = { count, {} };
-
-  for (int i = 0; i < count; ++i)
-    pack.deals[i] = toDDS(Bridge::getRandomDeal());
-
-  return pack;
-}
-
-static void solve(llvm::ArrayRef<Bridge::Deal> deals)
-{
-  const std::size_t strains = 5;
-  const std::size_t packSize = MAXNOOFTABLES * 5 / strains;
+  const std::size_t strains = !mask.c + !mask.d + !mask.h + !mask.s + !mask.n;
+  const std::size_t packSize = MAXNOOFTABLES * DDS_STRAINS / strains;
   const std::size_t q = deals.size() / packSize;
   const std::size_t r = deals.size() % packSize;
-  int filters[5] = {};
+
+  int filters[5] = { mask.s, mask.h, mask.d, mask.c, mask.n };
+  llvm::SmallVector<Bridge::Result, 0> results;
+  results.reserve(deals.size());
 
   for (std::size_t i = 0; i < q; ++i) {
+    ::ddTablesRes res = {};
     ::ddTableDeals pack = { packSize, {} };
-    llvm::transform(deals.slice(i * packSize, packSize), pack.deals, toDDS);
-    ::ddTablesRes results;
-    ::CalcAllTables(&pack, -1, filters, &results, nullptr);
+    llvm::transform(deals.slice(i * packSize, packSize), pack.deals, convertToDDS);
+    ::CalcAllTables(&pack, -1, filters, &res, nullptr);
+    std::copy(res.results, res.results + packSize, std::back_inserter(results));
   }
 
   if (r) {
+    ::ddTablesRes res = {};
     ::ddTableDeals pack = { r, {} };
-    llvm::transform(deals.slice(q * packSize, packSize), pack.deals, toDDS);
-    ::ddTablesRes results;
-    ::CalcAllTables(&pack, -1, filters, &results, nullptr);
-  }
-}
-
-static int procedure(std::size_t number)
-{
-  llvm::SmallVector<Bridge::Deal, 0> deals;
-  deals.reserve(number);
-
-  for (std::size_t i = 0; i < number; ++i) {
-    deals.push_back(Bridge::getRandomDeal());
-    llvm::outs() << deals.back() << '\n';
+    llvm::transform(deals.slice(q * packSize), pack.deals, convertToDDS);
+    ::CalcAllTables(&pack, -1, filters, &res, nullptr);
+    std::copy(res.results, res.results + r, std::back_inserter(results));
   }
 
-  solve(deals);
-  return 0;
-}
-
-int main(int argc, char **argv)
-{
-  using namespace llvm;
-  cl::opt<std::size_t> number(cl::Positional, cl::desc("<number of deals>"), cl::init(10));
-  cl::HideUnrelatedOptions({});
-
-  if (!cl::ParseCommandLineOptions(argc, argv, "Description?"))
-    return 1;
-
-  return procedure(number);
+  return results;
 }

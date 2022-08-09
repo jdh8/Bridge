@@ -53,7 +53,8 @@ class Holding
 
 public:
   std::uint16_t bits() const { return _data; }
-  bool empty() const { return !_data; }
+  unsigned size() const { return __builtin_popcount(bits()); }
+  bool empty() const { return !bits(); }
   bool test(int rank) const { return bits() & 1u << rank; }
 
   void set(int rank) { _data |= 1u << rank; }
@@ -96,4 +97,4 @@ llvm::raw_ostream &operator<<(llvm::raw_ostream &, const Deal &);
 
 } // namespace Bridge
 
-#endif // BRIDGE_DEAL_HPP
+#endif

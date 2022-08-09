@@ -11,11 +11,13 @@ else()
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+find_package(LLVM REQUIRED)
 find_library(DDS_LIBRARY dds "${DDS_SRC_DIR}/src" REQUIRED)
 
 include_directories(
   "include"
   "${DDS_SRC_DIR}/include"
+  ${LLVM_INCLUDE_DIRS}
 )
 
 add_subdirectory(lib)
