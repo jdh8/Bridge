@@ -18,5 +18,5 @@ include_directories(
   "${DDS_SRC_DIR}/include"
 )
 
-add_executable(generate src/generate.cpp src/Deal.cpp)
-target_link_libraries(generate "${DDS_LIBRARY}" LLVM)
+add_subdirectory(lib)
+add_subdirectory(tools)
