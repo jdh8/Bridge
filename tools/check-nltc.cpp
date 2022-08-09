@@ -99,6 +99,8 @@ static void procedure(std::size_t number)
 
 int main(int argc, char **argv)
 {
+  std::ios_base::sync_with_stdio(false);
+
   if (argc < 2) {
     procedure(100);
     return 0;
