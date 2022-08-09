@@ -91,8 +91,8 @@ static void procedure(std::size_t number)
   x.rowwise() -= x.colwise().mean();
 
   const auto covariance = ((x.adjoint() * x) / (x.rows() - 1)).eval();
-  const auto diag = covariance.diagonal().array().rsqrt().eval();
-  const auto r = (covariance.array().colwise() * diag).rowwise() * diag.transpose();
+  const auto diag = covariance.diagonal().array().rsqrt().matrix().eval().asDiagonal();
+  const auto r = diag * covariance * diag;
 
   std::cout << "   Tricks      HCP+  BUM-RAP+       LTC      NLTC      ALTC\n" << r << '\n';
 }
