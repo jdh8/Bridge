@@ -19,8 +19,8 @@
 #define BRIDGE_DDS_HPP
 
 #include "Deal.hpp"
-#include <llvm/ADT/ArrayRef.h>
-#include <llvm/ADT/SmallVector.h>
+#include <span>
+#include <vector>
 
 struct ddTableResults;
 
@@ -61,11 +61,11 @@ public:
       case Seat::S: return result.s;
       case Seat::W: return result.w;
     }
-    llvm_unreachable("Undefined seat");
+    return 0;
   }
 };
 
-llvm::SmallVector<Result, 0> solve(llvm::ArrayRef<Deal> deals, StrainMask mask = {});
+std::vector<Result> solve(std::span<const Deal> deals, StrainMask mask = {});
 
 } // namespace Bridge
 

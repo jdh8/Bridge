@@ -16,7 +16,6 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <Bridge/Deal.hpp>
-#include <llvm/Support/raw_ostream.h>
 #include <algorithm>
 #include <random>
 
@@ -48,33 +47,4 @@ Bridge::Deal Bridge::getRandomDeal()
       deal[Seat(seat)].set(deck[13 * seat + i]);
 
   return deal;
-}
-
-llvm::raw_ostream &Bridge::operator<<(llvm::raw_ostream &stream, const Bridge::Holding &holding)
-{
-  const char table[] = "23456789TJQKA";
-
-  for (int rank = 14; rank > 1; --rank)
-    if (holding.test(rank))
-      stream << table[rank - 2];
-
-  return stream;
-}
-
-llvm::raw_ostream &Bridge::operator<<(llvm::raw_ostream &stream, const Bridge::Hand &hand)
-{
-  return stream
-    << hand[Strain::S] << '.'
-    << hand[Strain::H] << '.'
-    << hand[Strain::D] << '.'
-    << hand[Strain::C];
-}
-
-llvm::raw_ostream &Bridge::operator<<(llvm::raw_ostream &stream, const Bridge::Deal &deal)
-{
-  return stream << "N:"
-    << deal[Seat::N] << ' '
-    << deal[Seat::E] << ' '
-    << deal[Seat::S] << ' '
-    << deal[Seat::W];
 }

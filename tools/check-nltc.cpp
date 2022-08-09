@@ -17,7 +17,6 @@
 
 #include <Bridge/Evaluator.hpp>
 #include <Bridge/DDS.hpp>
-#include <llvm/Support/CommandLine.h>
 #include <Eigen/Core>
 #include <iostream>
 
@@ -62,7 +61,7 @@ static auto observe(const Bridge::Result &solution, const Bridge::Deal &deal, Br
   return vector;
 }
 
-static auto observe(llvm::ArrayRef<Bridge::Result> solutions, llvm::ArrayRef<Bridge::Deal> deals)
+static auto observe(std::span<const Bridge::Result> solutions, std::span<const Bridge::Deal> deals)
 {
   using namespace Bridge;
   using namespace Eigen;
@@ -79,9 +78,9 @@ static auto observe(llvm::ArrayRef<Bridge::Result> solutions, llvm::ArrayRef<Bri
   return result;
 }
 
-static int procedure(std::size_t number)
+static void procedure(std::size_t number)
 {
-  llvm::SmallVector<Bridge::Deal, 0> deals;
+  std::vector<Bridge::Deal> deals;
   deals.reserve(number);
   std::generate_n(std::back_inserter(deals), number, Bridge::getRandomDeal);
 
@@ -96,17 +95,24 @@ static int procedure(std::size_t number)
   const auto r = (covariance.array().colwise() * diag).rowwise() * diag.transpose();
 
   std::cout << "   Tricks      HCP+  BUM-RAP+       LTC      NLTC      ALTC\n" << r << '\n';
-  return 0;
 }
 
 int main(int argc, char **argv)
 {
-  using namespace llvm;
-  cl::opt<std::size_t> number(cl::Positional, cl::desc("<number of deals>"), cl::init(10));
-  cl::HideUnrelatedOptions({});
+  if (argc < 2) {
+    procedure(100);
+    return 0;
+  }
 
-  if (!cl::ParseCommandLineOptions(argc, argv, "Verify NLTC as a single-hand evaluator"))
-    return 1;
+  if (argc == 2) {
+    unsigned long number = std::strtoul(argv[1], nullptr, 10);
 
-  return procedure(number);
+    if (number && number != static_cast<unsigned long>(-1)) {
+      procedure(number);
+      return 0;
+    }
+  }
+
+  std::cout << "USAGE: " << argv[0] << " <number of deals>\n";
+  return 1;
 }

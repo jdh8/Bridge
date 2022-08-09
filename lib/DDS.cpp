@@ -17,6 +17,7 @@
 
 #include <Bridge/DDS.hpp>
 #include <dll.h>
+#include <algorithm>
 
 Bridge::Result::Result(const ::ddTableResults &table)
   : _strains {
@@ -60,7 +61,7 @@ static ::ddTableDeal convertToDDS(const Bridge::Deal &deal)
   }};
 }
 
-llvm::SmallVector<Bridge::Result, 0> Bridge::solve(llvm::ArrayRef<Bridge::Deal> deals, Bridge::StrainMask mask)
+std::vector<Bridge::Result> Bridge::solve(std::span<const Bridge::Deal> deals, Bridge::StrainMask mask)
 {
   const std::size_t strains = !mask.c + !mask.d + !mask.h + !mask.s + !mask.n;
   const std::size_t packSize = MAXNOOFTABLES * DDS_STRAINS / strains;
@@ -68,13 +69,13 @@ llvm::SmallVector<Bridge::Result, 0> Bridge::solve(llvm::ArrayRef<Bridge::Deal> 
   const std::size_t r = deals.size() % packSize;
 
   int filters[5] = { mask.s, mask.h, mask.d, mask.c, mask.n };
-  llvm::SmallVector<Bridge::Result, 0> results;
+  std::vector<Bridge::Result> results;
   results.reserve(deals.size());
 
   for (std::size_t i = 0; i < q; ++i) {
     ::ddTablesRes res = {};
     ::ddTableDeals pack = { packSize, {} };
-    llvm::transform(deals.slice(i * packSize, packSize), pack.deals, convertToDDS);
+    std::transform(deals.begin() + i * packSize, deals.begin() + (i + 1) * packSize, pack.deals, convertToDDS);
     ::CalcAllTables(&pack, -1, filters, &res, nullptr);
     std::copy(res.results, res.results + packSize, std::back_inserter(results));
   }
@@ -82,7 +83,7 @@ llvm::SmallVector<Bridge::Result, 0> Bridge::solve(llvm::ArrayRef<Bridge::Deal> 
   if (r) {
     ::ddTablesRes res = {};
     ::ddTableDeals pack = { r, {} };
-    llvm::transform(deals.slice(q * packSize), pack.deals, convertToDDS);
+    std::transform(deals.begin() + q * packSize, deals.end(), pack.deals, convertToDDS);
     ::CalcAllTables(&pack, -1, filters, &res, nullptr);
     std::copy(res.results, res.results + r, std::back_inserter(results));
   }

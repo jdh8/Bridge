@@ -18,11 +18,8 @@
 #ifndef BRIDGE_DEAL_HPP
 #define BRIDGE_DEAL_HPP
 
+#include <iosfwd>
 #include <cstdint>
-
-namespace llvm {
-class raw_ostream;
-} // namespace llvm
 
 namespace Bridge {
 
@@ -91,9 +88,37 @@ public:
 
 Deal getRandomDeal();
 
-llvm::raw_ostream &operator<<(llvm::raw_ostream &, const Holding &);
-llvm::raw_ostream &operator<<(llvm::raw_ostream &, const Hand &);
-llvm::raw_ostream &operator<<(llvm::raw_ostream &, const Deal &);
+template <typename Ch>
+std::basic_ostream<Ch> & operator<<(std::basic_ostream<Ch> &stream, const Holding &holding)
+{
+  const Ch table[] = { '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A' };
+
+  for (int rank = 14; rank > 1; --rank)
+    if (holding.test(rank))
+      stream << table[rank - 2];
+
+  return stream;
+}
+
+template <typename Ch>
+std::basic_ostream<Ch> & operator<<(std::basic_ostream<Ch> &stream, const Hand &hand)
+{
+  return stream
+    << hand[Strain::S] << '.'
+    << hand[Strain::H] << '.'
+    << hand[Strain::D] << '.'
+    << hand[Strain::C];
+}
+
+template <typename Ch>
+std::basic_ostream<Ch> & operator<<(std::basic_ostream<Ch> &stream, const Deal &deal)
+{
+  return stream << "N:"
+    << deal[Seat::N] << ' '
+    << deal[Seat::E] << ' '
+    << deal[Seat::S] << ' '
+    << deal[Seat::W];
+}
 
 } // namespace Bridge
 

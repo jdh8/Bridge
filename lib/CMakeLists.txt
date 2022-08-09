@@ -3,7 +3,7 @@ add_library(Bridge STATIC
   Deal.cpp
 )
 
-target_link_libraries(Bridge INTERFACE
+target_link_libraries(Bridge PUBLIC
   "${DDS_LIBRARY}"
-  LLVM
+  Eigen3::Eigen
 )
