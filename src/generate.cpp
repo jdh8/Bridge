@@ -102,6 +102,7 @@ int main(int argc, char **argv)
 {
   using namespace llvm;
   cl::opt<std::size_t> number(cl::Positional, cl::desc("<number of deals>"), cl::init(10));
+  cl::HideUnrelatedOptions({});
 
   if (!cl::ParseCommandLineOptions(argc, argv, "Description?"))
     return 1;
