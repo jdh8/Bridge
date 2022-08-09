@@ -1,11 +1,13 @@
 Bridge
 ======
-Bridge library and utility in clean C++11.
+Bridge library and utility in clean C++14.
 
-## Dependency ##
-[DDS][dds], the double-dummy solver, as a submodule.
+## Dependencies ##
+- [DDS][dds], the double-dummy solver
+- [LLVM][llvm], for the command-line interface
+- [Eigen 3][eigen], for the experiment to justify NLTC
 
-## Build ##
+## Building ##
 [CMake][cmake] is used to automate build.  The building instruction is similar
 to other CMake-automated projects.
 
@@ -16,7 +18,7 @@ cmake ..
 make -j8
 ```
 
-The executables are built then.
-
 [cmake]: https://cmake.org/
 [dds]: https://github.com/dds-bridge/dds
+[llvm]: https://github.com/llvm/llvm-project
+[eigen]: https://gitlab.com/libeigen/eigen
