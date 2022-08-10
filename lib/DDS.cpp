@@ -21,11 +21,36 @@
 
 Bridge::Result::Result(const ::ddTableResults &table)
   : _strains {
-    { table.resTable[3][0], table.resTable[3][1], table.resTable[3][2], table.resTable[3][3] },
-    { table.resTable[2][0], table.resTable[2][1], table.resTable[2][2], table.resTable[2][3] },
-    { table.resTable[1][0], table.resTable[1][1], table.resTable[1][2], table.resTable[1][3] },
-    { table.resTable[0][0], table.resTable[0][1], table.resTable[0][2], table.resTable[0][3] },
-    { table.resTable[4][0], table.resTable[4][1], table.resTable[4][2], table.resTable[4][3] },
+    {
+      static_cast<std::uint16_t>(table.resTable[3][0]),
+      static_cast<std::uint16_t>(table.resTable[3][1]),
+      static_cast<std::uint16_t>(table.resTable[3][2]),
+      static_cast<std::uint16_t>(table.resTable[3][3]),
+    },
+    {
+      static_cast<std::uint16_t>(table.resTable[2][0]),
+      static_cast<std::uint16_t>(table.resTable[2][1]),
+      static_cast<std::uint16_t>(table.resTable[2][2]),
+      static_cast<std::uint16_t>(table.resTable[2][3]),
+    },
+    {
+      static_cast<std::uint16_t>(table.resTable[1][0]),
+      static_cast<std::uint16_t>(table.resTable[1][1]),
+      static_cast<std::uint16_t>(table.resTable[1][2]),
+      static_cast<std::uint16_t>(table.resTable[1][3]),
+    },
+    {
+      static_cast<std::uint16_t>(table.resTable[0][0]),
+      static_cast<std::uint16_t>(table.resTable[0][1]),
+      static_cast<std::uint16_t>(table.resTable[0][2]),
+      static_cast<std::uint16_t>(table.resTable[0][3]),
+    },
+    {
+      static_cast<std::uint16_t>(table.resTable[4][0]),
+      static_cast<std::uint16_t>(table.resTable[4][1]),
+      static_cast<std::uint16_t>(table.resTable[4][2]),
+      static_cast<std::uint16_t>(table.resTable[4][3]),
+    },
   }
 {}
 
@@ -74,7 +99,7 @@ std::vector<Bridge::Result> Bridge::solve(std::span<const Bridge::Deal> deals, B
 
   for (std::size_t i = 0; i < q; ++i) {
     ::ddTablesRes res = {};
-    ::ddTableDeals pack = { packSize, {} };
+    ::ddTableDeals pack = { static_cast<int>(packSize), {} };
     std::transform(deals.begin() + i * packSize, deals.begin() + (i + 1) * packSize, pack.deals, convertToDDS);
     ::CalcAllTables(&pack, -1, filters, &res, nullptr);
     std::copy(res.results, res.results + packSize, std::back_inserter(results));
@@ -82,7 +107,7 @@ std::vector<Bridge::Result> Bridge::solve(std::span<const Bridge::Deal> deals, B
 
   if (r) {
     ::ddTablesRes res = {};
-    ::ddTableDeals pack = { r, {} };
+    ::ddTableDeals pack = { static_cast<int>(r), {} };
     std::transform(deals.begin() + q * packSize, deals.end(), pack.deals, convertToDDS);
     ::CalcAllTables(&pack, -1, filters, &res, nullptr);
     std::copy(res.results, res.results + r, std::back_inserter(results));
