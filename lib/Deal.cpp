@@ -19,10 +19,10 @@
 #include <algorithm>
 #include <random>
 
+static std::mt19937 generator(std::random_device{}());
+
 Bridge::Deal Bridge::getRandomDeal()
 {
-  static std::mt19937 generator(std::random_device{}());
-
   Card deck[] = {
     { Strain::S,  2 }, { Strain::H,  2 }, { Strain::D,  2 }, { Strain::C,  2 },
     { Strain::S,  3 }, { Strain::H,  3 }, { Strain::D,  3 }, { Strain::C,  3 },
@@ -47,4 +47,49 @@ Bridge::Deal Bridge::getRandomDeal()
       deal[Seat(seat)].set(deck[13 * seat + i]);
 
   return deal;
+}
+
+static auto combine(const Bridge::Deal &deal, Bridge::Strain strain)
+{
+  return deal[Bridge::Seat::N][strain].bits()
+       | deal[Bridge::Seat::E][strain].bits()
+       | deal[Bridge::Seat::W][strain].bits()
+       | deal[Bridge::Seat::S][strain].bits();
+}
+
+void Bridge::fillRandomCards(Bridge::Deal &deal)
+{
+  const auto c = combine(deal, Strain::C);
+  const auto d = combine(deal, Strain::D);
+  const auto h = combine(deal, Strain::H);
+  const auto s = combine(deal, Strain::S);
+
+  Card deck[52];
+  Card *top = deck;
+
+  for (int rank = 2; rank <= 14; ++ rank) {
+    if (!(1u << rank & c))
+      *top++ = { Strain::C, rank };
+    if (!(1u << rank & d))
+      *top++ = { Strain::D, rank };
+    if (!(1u << rank & h))
+      *top++ = { Strain::H, rank };
+    if (!(1u << rank & s))
+      *top++ = { Strain::S, rank };
+  }
+
+  std::shuffle(deck, top, generator);
+  const Card *take = deck;
+
+  for (auto slots = 13 - deal[Bridge::Seat::N].size(); slots--;)
+    deal[Bridge::Seat::N].set(*take++);
+
+  for (auto slots = 13 - deal[Bridge::Seat::E].size(); slots--;)
+    deal[Bridge::Seat::E].set(*take++);
+
+  for (auto slots = 13 - deal[Bridge::Seat::S].size(); slots--;)
+    deal[Bridge::Seat::S].set(*take++);
+
+  for (auto slots = 13 - deal[Bridge::Seat::W].size(); slots--;)
+    deal[Bridge::Seat::W].set(*take++);
 }

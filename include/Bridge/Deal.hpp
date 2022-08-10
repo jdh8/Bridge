@@ -18,6 +18,7 @@
 #ifndef BRIDGE_DEAL_HPP
 #define BRIDGE_DEAL_HPP
 
+#include <array>
 #include <iosfwd>
 #include <cstdint>
 
@@ -36,6 +37,8 @@ class Card
   unsigned char _rank : 4;
 
 public:
+  Card() = default;
+
   constexpr Card(Strain suit, int rank)
     : _suit(static_cast<int>(suit)), _rank(rank)
   {}
@@ -73,20 +76,28 @@ public:
         && _data[3].empty();
   }
 
+  unsigned size() const
+  {
+    return __builtin_popcountll(
+        static_cast<unsigned long long>(_data[0].bits())       |
+        static_cast<unsigned long long>(_data[1].bits()) << 16 |
+        static_cast<unsigned long long>(_data[2].bits()) << 32 |
+        static_cast<unsigned long long>(_data[3].bits()) << 48);
+  }
+
   bool test(Card card) const { return (*this)[card.suit()].test(card.rank()); }
   void set(Card card) { (*this)[card.suit()].set(card.rank()); }
 };
 
-class Deal
+struct Deal : private std::array<Hand, 4>
 {
-  Hand _hands[4] = {};
-
-public:
-  Hand operator[](Seat seat) const { return _hands[static_cast<int>(seat)]; }
-  Hand & operator[](Seat seat) { return _hands[static_cast<int>(seat)]; }
+  using std::array<Hand, 4>::array;
+  const Hand & operator[](Seat seat) const { return data()[static_cast<int>(seat)]; }
+  Hand & operator[](Seat seat) { return data()[static_cast<int>(seat)]; }
 };
 
 Deal getRandomDeal();
+void fillRandomCards(Deal &);
 
 template <typename Ch>
 std::basic_ostream<Ch> & operator<<(std::basic_ostream<Ch> &stream, const Holding &holding)
