@@ -37,8 +37,6 @@ class Card
   unsigned char _rank : 4;
 
 public:
-  Card() = default;
-
   constexpr Card(Strain suit, int rank)
     : _suit(static_cast<int>(suit)), _rank(rank)
   {}

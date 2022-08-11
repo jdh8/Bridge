@@ -5,5 +5,6 @@ add_library(Bridge STATIC
 
 target_link_libraries(Bridge PUBLIC
   "${DDS_LIBRARY}"
+  Boost::container
   Eigen3::Eigen
 )

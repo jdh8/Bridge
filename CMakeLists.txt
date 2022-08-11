@@ -12,6 +12,7 @@ else()
 endif()
 
 find_library(DDS_LIBRARY dds "${DDS_SRC_DIR}/src" REQUIRED)
+find_package(Boost REQUIRED container)
 find_package(Eigen3 REQUIRED NO_MODULE)
 
 include_directories(

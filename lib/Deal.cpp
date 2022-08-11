@@ -16,6 +16,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <Bridge/Deal.hpp>
+#include <boost/container/small_vector.hpp>
 #include <algorithm>
 #include <random>
 
@@ -64,22 +65,21 @@ void Bridge::fillRandomCards(Bridge::Deal &deal)
   const auto h = combine(deal, Strain::H);
   const auto s = combine(deal, Strain::S);
 
-  Card deck[52];
-  Card *top = deck;
+  boost::container::small_vector<Card, 52> deck;
 
   for (int rank = 2; rank <= 14; ++ rank) {
     if (!(1u << rank & c))
-      *top++ = { Strain::C, rank };
+      deck.emplace_back(Strain::C, rank);
     if (!(1u << rank & d))
-      *top++ = { Strain::D, rank };
+      deck.emplace_back(Strain::D, rank);
     if (!(1u << rank & h))
-      *top++ = { Strain::H, rank };
+      deck.emplace_back(Strain::H, rank);
     if (!(1u << rank & s))
-      *top++ = { Strain::S, rank };
+      deck.emplace_back(Strain::S, rank);
   }
 
-  std::shuffle(deck, top, generator);
-  const Card *take = deck;
+  std::shuffle(deck.begin(), deck.end(), generator);
+  auto take = deck.cbegin();
 
   for (auto slots = 13 - deal[Bridge::Seat::N].size(); slots--;)
     deal[Bridge::Seat::N].set(*take++);
