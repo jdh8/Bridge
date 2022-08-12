@@ -65,7 +65,7 @@ static auto observe(const Bridge::Result &solution, const Bridge::Deal &deal, Br
   return vector;
 }
 
-static auto observe(std::span<const Bridge::Result> solutions, std::span<const Bridge::Deal> deals, bool add)
+static auto seatwiseObserve(std::span<const Bridge::Result> solutions, std::span<const Bridge::Deal> deals)
 {
   using namespace Bridge;
   using namespace Eigen;
@@ -73,27 +73,42 @@ static auto observe(std::span<const Bridge::Result> solutions, std::span<const B
   assert(solutions.size() == deals.size());
   const auto Cols = decltype(observe(std::declval<Result>(), {}, Seat::N))::ColsAtCompileTime;
 
-  Matrix<double, Dynamic, Cols, RowMajor> result;
+  Matrix<double, Dynamic, Cols, RowMajor> result(4 * deals.size(), Cols);
 
-  if (add) {
-    result.resize(2 * deals.size(), Cols);
+  for (std::size_t i = 0; i < deals.size(); ++i)
+    for (int seat = 0; seat < 4; ++seat)
+      result.row(4 * i + seat) = observe(solutions[i], deals[i], static_cast<Seat>(seat));
 
-    for (std::size_t i = 0; i < deals.size(); ++i) {
-      result.row(2 * i    ) = observe(solutions[i], deals[i], Seat::N) + observe(solutions[i], deals[i], Seat::S);
-      result.row(2 * i + 1) = observe(solutions[i], deals[i], Seat::E) + observe(solutions[i], deals[i], Seat::W);
-    }
-  }
-  else {
-    result.resize(4 * deals.size(), Cols);
+  return result;
+}
 
-    for (std::size_t i = 0; i < deals.size(); ++i)
-      for (int seat = 0; seat < 4; ++seat)
-        result.row(4 * i + seat) = observe(solutions[i], deals[i], static_cast<Seat>(seat));
+static auto pairwiseObserve(std::span<const Bridge::Result> solutions, std::span<const Bridge::Deal> deals)
+{
+  using namespace Bridge;
+  using namespace Eigen;
+
+  assert(solutions.size() == deals.size());
+  const auto Cols = decltype(observe(std::declval<Result>(), {}, Seat::N))::ColsAtCompileTime;
+
+  Matrix<double, Dynamic, Cols, RowMajor> result(2 * deals.size(), Cols);
+
+  for (std::size_t i = 0; i < deals.size(); ++i) {
+    result.row(2 * i    ) = observe(solutions[i], deals[i], Seat::N) + observe(solutions[i], deals[i], Seat::S);
+    result.row(2 * i + 1) = observe(solutions[i], deals[i], Seat::E) + observe(solutions[i], deals[i], Seat::W);
   }
   return result;
 }
 
-static void procedure(std::size_t number, bool add)
+template <typename Derived>
+static auto corrcoef(const Eigen::MatrixBase<Derived> &observations)
+{
+  const auto centered = (observations.rowwise() - observations.colwise().mean()).eval();
+  const auto covariance = ((centered.adjoint() * centered) / (centered.rows() - 1)).eval();
+  const auto diag = covariance.diagonal().array().rsqrt().matrix().eval().asDiagonal();
+  return (diag * covariance * diag).eval();
+}
+
+static void procedure(std::size_t number)
 {
   std::vector<Bridge::Deal> deals;
   deals.reserve(number);
@@ -102,14 +117,12 @@ static void procedure(std::size_t number, bool add)
   // Filter out notrump contracts
   const Bridge::StrainMask mask = { false, false, false, false, /*.n=*/true };
   const auto solutions = Bridge::solve(deals, mask);
-  auto x = observe(solutions, deals, add);
-  x.rowwise() -= x.colwise().mean();
+  const char header[] = "   Tricks      HCP+  BUM-RAP+       LTC      NLTC      ALTC\n";
 
-  const auto covariance = ((x.adjoint() * x) / (x.rows() - 1)).eval();
-  const auto diag = covariance.diagonal().array().rsqrt().matrix().eval().asDiagonal();
-  const auto r = diag * covariance * diag;
-
-  std::cout << "   Tricks      HCP+  BUM-RAP+       LTC      NLTC      ALTC\n" << r << '\n';
+  std::cout << "Seatwise evaluation\n"
+            << header << corrcoef(seatwiseObserve(solutions, deals))
+            << "\n\nPairwise evaluation\n"
+            << header << corrcoef(pairwiseObserve(solutions, deals)) << '\n';
 }
 
 int main(int argc, char **argv)
@@ -123,7 +136,6 @@ int main(int argc, char **argv)
 
   desc.add_options()
     ("help,?", "Display options")
-    ("add,a", "Add evaluations within partnerships")
     ("number", po::value<std::size_t>(&number)->default_value(100), "Number of deals");
 
   po::positional_options_description pos;
@@ -139,7 +151,7 @@ int main(int argc, char **argv)
       return 0;
     }
 
-    procedure(number, vars.count("add"));
+    procedure(number);
   }
   catch (const po::error &error) {
     std::clog << "Error: " << error.what() << "\n\n" << usage << desc << '\n';
