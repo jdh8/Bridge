@@ -18,6 +18,10 @@
 #include <Bridge/Evaluator.hpp>
 #include <Bridge/DDS.hpp>
 #include <Eigen/Core>
+#include <boost/program_options/options_description.hpp>
+#include <boost/program_options/parsers.hpp>
+#include <boost/program_options/positional_options.hpp>
+#include <boost/program_options/variables_map.hpp>
 #include <iostream>
 
 static int ltc(Bridge::Holding holding)
@@ -61,7 +65,7 @@ static auto observe(const Bridge::Result &solution, const Bridge::Deal &deal, Br
   return vector;
 }
 
-static auto observe(std::span<const Bridge::Result> solutions, std::span<const Bridge::Deal> deals)
+static auto observe(std::span<const Bridge::Result> solutions, std::span<const Bridge::Deal> deals, bool add)
 {
   using namespace Bridge;
   using namespace Eigen;
@@ -69,16 +73,27 @@ static auto observe(std::span<const Bridge::Result> solutions, std::span<const B
   assert(solutions.size() == deals.size());
   const auto Cols = decltype(observe(std::declval<Result>(), {}, Seat::N))::ColsAtCompileTime;
 
-  Matrix<double, Dynamic, Cols, RowMajor> result(4 * deals.size(), Cols);
+  Matrix<double, Dynamic, Cols, RowMajor> result;
 
-  for (std::size_t i = 0; i < deals.size(); ++i)
-    for (int seat = 0; seat < 4; ++seat)
-      result.row(4 * i + seat) = observe(solutions[i], deals[i], static_cast<Seat>(seat));
+  if (add) {
+    result.resize(2 * deals.size(), Cols);
 
+    for (std::size_t i = 0; i < deals.size(); ++i) {
+      result.row(2 * i    ) = observe(solutions[i], deals[i], Seat::N) + observe(solutions[i], deals[i], Seat::S);
+      result.row(2 * i + 1) = observe(solutions[i], deals[i], Seat::E) + observe(solutions[i], deals[i], Seat::W);
+    }
+  }
+  else {
+    result.resize(4 * deals.size(), Cols);
+
+    for (std::size_t i = 0; i < deals.size(); ++i)
+      for (int seat = 0; seat < 4; ++seat)
+        result.row(4 * i + seat) = observe(solutions[i], deals[i], static_cast<Seat>(seat));
+  }
   return result;
 }
 
-static void procedure(std::size_t number)
+static void procedure(std::size_t number, bool add)
 {
   std::vector<Bridge::Deal> deals;
   deals.reserve(number);
@@ -87,7 +102,7 @@ static void procedure(std::size_t number)
   // Filter out notrump contracts
   const Bridge::StrainMask mask = { false, false, false, false, /*.n=*/true };
   const auto solutions = Bridge::solve(deals, mask);
-  auto x = observe(solutions, deals);
+  auto x = observe(solutions, deals, add);
   x.rowwise() -= x.colwise().mean();
 
   const auto covariance = ((x.adjoint() * x) / (x.rows() - 1)).eval();
@@ -99,22 +114,35 @@ static void procedure(std::size_t number)
 
 int main(int argc, char **argv)
 {
+  const char usage[] = "Usage: check-nltc [options] [number]\n\n";
   std::ios_base::sync_with_stdio(false);
 
-  if (argc < 2) {
-    procedure(100);
-    return 0;
-  }
+  namespace po = boost::program_options;
+  po::options_description desc("Options");
+  std::size_t number;
 
-  if (argc == 2) {
-    unsigned long number = std::strtoul(argv[1], nullptr, 10);
+  desc.add_options()
+    ("help,?", "Display options")
+    ("add,a", "Add evaluations within partnerships")
+    ("number", po::value<std::size_t>(&number)->default_value(100), "Number of deals");
 
-    if (number && number != static_cast<unsigned long>(-1)) {
-      procedure(number);
+  po::positional_options_description pos;
+  pos.add("number", 1);
+
+  try {
+    po::variables_map vars;
+    po::store(po::command_line_parser(argc, argv).options(desc).positional(pos).run(), vars);
+    po::notify(vars);
+
+    if (vars.count("help")) {
+      std::clog << usage << desc << '\n';
       return 0;
     }
-  }
 
-  std::cout << "USAGE: " << argv[0] << " <number of deals>\n";
-  return 1;
+    procedure(number, vars.count("add"));
+  }
+  catch (const po::error &error) {
+    std::clog << "Error: " << error.what() << "\n\n" << usage << desc << '\n';
+    return 1;
+  }
 }

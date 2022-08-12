@@ -4,7 +4,7 @@ Bridge library and utility in clean C++20.
 
 ## Dependencies ##
 - [DDS][dds], the double-dummy solver
-- Boost
+- Boost, for data structures and command-line options
 - [Eigen][eigen], for efficient statistics
 
 ## Building ##
