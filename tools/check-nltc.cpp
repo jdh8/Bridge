@@ -17,7 +17,7 @@
 
 #include <Bridge/Evaluator.hpp>
 #include <Bridge/DDS.hpp>
-#include <Eigen/Core>
+#include <Eigen/QR>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
 #include <boost/program_options/positional_options.hpp>
@@ -108,6 +108,23 @@ static auto corrcoef(const Eigen::MatrixBase<Derived> &observations)
   return (diag * covariance * diag).eval();
 }
 
+template <typename Derived>
+static auto regress(const Eigen::MatrixBase<Derived> &observations)
+{
+  using namespace Eigen;
+  const auto y = observations.col(0);
+  Matrix<double, 2, Derived::ColsAtCompileTime> beta(2, observations.cols());
+
+  beta.col(0) << y.mean(), 0;
+
+  for (typename Derived::Index i = 1; i < observations.cols(); ++i) {
+    Matrix<double, Dynamic, 2> x(y.rows(), 2);
+    x << y.Ones(y.rows()), observations.col(i);
+    beta.col(i) = x.colPivHouseholderQr().solve(y).eval();
+  }
+  return beta;
+}
+
 static void procedure(std::size_t number)
 {
   std::vector<Bridge::Deal> deals;
@@ -119,10 +136,15 @@ static void procedure(std::size_t number)
   const auto solutions = Bridge::solve(deals, mask);
   const char header[] = "   Tricks      HCP+  BUM-RAP+       LTC      NLTC      ALTC\n";
 
+  const auto seatwise = seatwiseObserve(solutions, deals);
+  const auto pairwise = pairwiseObserve(solutions, deals);
+
   std::cout << "Seatwise evaluation\n"
-            << header << corrcoef(seatwiseObserve(solutions, deals))
+            << header << corrcoef(seatwise) << "\n\n"
+            << regress(seatwise)
             << "\n\nPairwise evaluation\n"
-            << header << corrcoef(pairwiseObserve(solutions, deals)) << '\n';
+            << header << corrcoef(pairwiseObserve(solutions, deals)) << "\n\n"
+            << 0.5 * regress(pairwise) << '\n';
 }
 
 int main(int argc, char **argv)
